@@ -16,13 +16,21 @@
                 return this.href == id;
             }).parent().removeClass('text-primary');
         });
+
+      
     </script>
 
     <script>
         document.getElementById('avatar').onchange = function () {
+          
             var src = URL.createObjectURL(this.files[0])
             document.getElementById('image').src = src
         }
+
+
+        $('#delImageButton').on('click',function(){
+            $('#image').attr('src','');
+      });
         </script>
 @endpush
 @section('breadcrumb')
@@ -52,21 +60,21 @@
                         <div class="row">
                             <div class="col-lg-6 col-sm-6">
                                 <div class="form-group">
-                                    <label class="col-form-label text-dark">{{__('Name')}}</label>
-                                    <input class="form-control" name="name" type="text" id="name" placeholder="{{ __('Enter Your Name') }}" value="{{ $userDetail->name }}" required autocomplete="name">
+                                    <label class="col-form-label text-dark">{{__('Name')}}</label><x-required></x-required>
+                                    <input class="form-control" name="name" type="text" id="name" required="required" placeholder="{{ __('Enter Your Name') }}" value="{{ $userDetail->name }}" required autocomplete="name">
                                 </div>
                             </div>
                             <div class="col-lg-6 col-sm-6">
                                 <div class="form-group">
-                                    <label for="email" class="col-form-label text-dark">{{__('Email')}}</label>
-                                    <input class="form-control" name="email" type="email" id="email" placeholder="{{ __('Enter Your Email Address') }}" value="{{ $userDetail->email }}" required autocomplete="email">
+                                    <label for="email" class="col-form-label text-dark">{{__('Email')}}</label><x-required></x-required>
+                                    <input class="form-control" name="email" type="email" id="email" required="required" placeholder="{{ __('Enter Your Email Address') }}" value="{{ $userDetail->email }}" required autocomplete="email">
                                 </div>
                             </div>
                             <div class="col-lg-6 col-md-6">
                                 <div class="form-group">
                                     <div class="theme-avtar-logo mt-4">
                                         <img id="image" src="{{ ($userDetail->avatar) ? $profile  . $userDetail->avatar : $profile . 'avatar.png' }}"
-                                             class="big-logo">
+                                             class="big-logo" alt="No Image">
                                     </div>
                                     <div class="choose-files mt-3">
                                         <label for="avatar">
@@ -74,6 +82,7 @@
                                             <input type="file" class="form-control file file-validate" name="profile" id="avatar" data-filename="profile_update">
                                             <p id="" class="file-error text-danger"></p>
                                         </label>
+                                        <input type="button" class="bg-primary" id="delImageButton" value="Remove Image">
                                     </div>
                                     <span class="text-xs text-muted">{{ __('Please upload a valid image file. Size of image should not be more than 2MB.')}}</span>
                                 </div>

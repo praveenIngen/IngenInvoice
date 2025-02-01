@@ -1,4 +1,4 @@
-{{ Form::model($category, array('route' => array('product-category.update', $category->id), 'method' => 'PUT', 'class'=>'needs-validation', 'novalidate')) }}
+{{ Form::model($category, array('route' => array('product-category.update', $category->id), 'method' => 'PUT', 'class'=>'needs-validation')) }}
 <div class="modal-body">
 
     <div class="row">

@@ -1,10 +1,6 @@
 {{ Form::model($productService, array('route' => array('productservice.update', $productService->id), 'method' => 'PUT','enctype' => "multipart/form-data", 'class'=>'needs-validation','id'=>'productFormUpdate')) }}
 <div class="modal-body">
-    {{-- start for ai module--}}
-    @php
-        $plan= \App\Models\Utility::getChatGPTSettings();
-    @endphp
-  
+ 
     <div class="row">
         <div class="col-md-6">
             <div class="form-group">
@@ -143,7 +139,13 @@
         var src = URL.createObjectURL(this.files[0])
         document.getElementById('image').src = src
     }
-
+    if ($('input[name="type"]:checked').val() == 'GOODS') {
+            $('.quantity').removeClass('d-none')
+            $('.quantity').addClass('d-block');
+        } else {
+            $('.quantity').addClass('d-none')
+            $('.quantity').removeClass('d-block');
+        }
     //hide & show quantity
 
     $(document).on('click', '.type', function ()
@@ -193,7 +195,13 @@
                 $('#'+value).next('.error-message').remove();
                 submitData=true;
             }
+         
         });
+        if( $('input[name="type"]:checked').val() =="SERVICES"){
+                    $('#quantity').removeClass("error");
+                    $('#quantity').next('.error-message').remove();
+                    submitData=true;
+                }
        if(submitData===true &&  ($('#'+variableName[0]).hasClass("error")==false) && 
            ($('#'+variableName[1]).hasClass("error")==false) && ($('#'+variableName[2]).hasClass("error")==false) && 
            ($('#'+variableName[3]).hasClass("error")==false) && ($('#'+variableName[4]).hasClass("error")==false) &&

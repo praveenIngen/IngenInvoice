@@ -218,6 +218,7 @@ class EmailTemplateController extends Controller
                     $settings         = Utility::settings();
                     $emailTemplate     = $settings['company_name'];
                 }
+             
                 $EmailTemplates = EmailTemplate::all();
 
 

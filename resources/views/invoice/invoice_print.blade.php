@@ -111,12 +111,13 @@
                             <div class="invoice-print">
                                 <div class="row invoice-title mt-2">
                                     <div class="col-xs-12 col-sm-12 col-nd-6 col-lg-6 col-12">
-                                        <h2 style="text-align:center">{{ __('Invoice') }}</h2>
+                                        <h4 style="text-align:center">{{ __('Invoice') }}</h4>
                                     </div>
                                     <div class="col-xs-12 col-sm-12 col-nd-6 col-lg-6 col-12" style="text-align:center">
                                     @if (!empty($seller['name']))
                                         <div class="col">
                                             <strong class="font-style">
+                                               <h3> {{ !empty($seller['name']) ? $seller['name'] : ''  }}</h3>
                                                 {{ !empty($seller['businessAddr']) ? $seller['businessAddr'] : '' }}<br>
                                                 <strong class="font-style">  {{ __('Tel : ') }}  </strong>{{ !empty($seller['businessPhoneNo']) ? $seller['businessPhoneNo'] : '' }}<br>
                                             </strong>
@@ -134,8 +135,8 @@
                                         </div>
                                     </div>
                                     <div class="col-xs-12 col-sm-12 col-nd-6 col-lg-6 col-12 text-end">
-                                        <h3 class="invoice-number" style="text-align:center">
-                                       {{ $invoice->created_at }} </h3>
+                                        <h5 class="invoice-number" style="text-align:center">
+                                       {{ Auth::user()->dateFormat($invoice->created_at) }} </h5>
                                     </div>
                                     <div class="col-12">
                                         <hr>

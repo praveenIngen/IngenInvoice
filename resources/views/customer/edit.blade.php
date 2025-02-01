@@ -7,8 +7,8 @@
     z-index: 99;
     /* line-height: 25px; */
     padding: 8px;
-    top: 6%;
-    margin-left: -6%;
+    /* top: 50%; */
+    margin-left: -21%;
 }
 
 #input-wrapper .form-control {
@@ -38,18 +38,19 @@
     <div class="row">
         <div class="col-lg-4 col-md-4 col-sm-6">
             <div class="form-group">
-                {{Form::label('name',__('Name'),array('class'=>'form-label')) }}<x-required></x-required>
+                {{Form::label('name',__('Full Name'),array('class'=>'form-label')) }}<x-required></x-required>
                 {{Form::text('name',null,array('class'=>'form-control','required'=>'required'))}}
 
             </div>
         </div>
         <div class="col-lg-4 col-md-4 col-sm-6">
-            <div class="form-group" id="input-wrapper">
+            <div class="form-group">
              {{Form::label('contact',__('Contact'),['class'=>'form-label'])}}<x-required></x-required>
-                <span class="CountryCode" readonly>+230</span>
-                {{Form::number('contact',null,array('class'=>'form-control','required'=>'required', 'maxlength'=>'9' , 'minlength'=>'9', 'placeholder'=>__('Contact data')))}}
-                <!-- <x-mobile label="{{__('Contact')}}" name="contact" value="{{$customer->contact}}" required placeholder="Enter Contact"></x-mobile> -->
-            </div>
+             <div class="input-group">
+                        <span class="input-group-text">+230</span>
+                         <input type="number" aria-label="contact" value="{{$customer->contact}}" maxlength="15"  minlength="9" name="contact" id="contact" class="form-control">
+                    </div>
+              </div>
         </div>
         <div class="col-lg-4 col-md-4 col-sm-6">
             <div class="form-group">
@@ -121,8 +122,12 @@
         <div class="col-lg-6 col-md-6 col-sm-6">
             <div class="form-group">
                 {{Form::label('billing_phone',__('Phone'),array('class'=>'form-label')) }}
-                {{Form::number('billing_phone',null,array('class'=>'form-control'))}}
-
+<?php
+preg_match_all('!\d+!',$customer->billing_phone, $matches);
+$billingPhone =  (int)implode('', $matches[0]);
+?>
+                <input type="number" aria-label="billing_phone" value="{{ $customer->billing_phone?$billingPhone:null }}" name="billing_phone" id="billing_phone" class="form-control">
+                   
             </div>
         </div>
         <div class="col-md-12">
@@ -183,7 +188,11 @@
             <div class="col-lg-6 col-md-6 col-sm-6">
                 <div class="form-group">
                     {{Form::label('shipping_phone',__('Phone'),array('class'=>'form-label')) }}
-                    {{Form::text('shipping_phone',null,array('class'=>'form-control'))}}
+                    <?php
+preg_match_all('!\d+!',$customer->shipping_phone, $matches);
+$shippingPhone =  (int)implode('', $matches[0]);
+?>
+                    {{Form::number('shipping_phone',$customer->shipping_phone?$shippingPhone:null,array('class'=>'form-control'))}}
 
                 </div>
             </div>
@@ -276,12 +285,16 @@
                 $('#'+value).next('.error-message').remove();
                 $errorSpan = $('<span>').addClass('error-message').text(errormessage);
                 $('#'+value).addClass("error");
-                $('#'+value).after($errorSpan);
                
+                $('#'+value).after($errorSpan);
+                if(value=="contact" ){
+                    $('.error-message').addClass('width100');
+                }
                 submitData=false;
             }else{
                 // $errorSpan = $('<span>').removeClass('error-message').text();
                 $('#'+value).removeClass("error");
+             
                 $('#'+value).next('.error-message').remove();
                 submitData=true;
             }

@@ -78,47 +78,6 @@
 
             </ul>
   
-            <ul class="list-unstyled">
-                @if(\Auth::user()->type == 'company' )
-                @impersonating($guard = null)
-                <li class="dropdown dash-h-item drp-company">
-                    <a class="btn btn-danger btn-sm me-3" href="{{ route('exit.company') }}"><i class="ti ti-ban"></i>
-                        {{ __('Exit Company Login') }}
-                    </a>
-                </li>
-                @endImpersonating
-                @endif
-            
-            
-
-                <li class="dropdown dash-h-item drp-language">
-                    <a
-                        class="dash-head-link dropdown-toggle arrow-none me-0"
-                        data-bs-toggle="dropdown"
-                        href="#"
-                        role="button"
-                        aria-haspopup="false"
-                        aria-expanded="false"
-                    >
-                        <i class="ti ti-world nocolor"></i>
-                        <i class="ti ti-chevron-down drp-arrow nocolor"></i>
-                    </a>
-                    <div class="dropdown-menu dash-h-dropdown dropdown-menu-end">
-                     
-
-                        <h></h>
-                            @if(\Auth::user()->type=='super admin')
-                                <a  data-url="{{ route('create.language') }}" class="dropdown-item text-primary"  data-ajax-popup="true" data-title="{{__('Create New Language')}}">
-                                    {{ __('Create Language') }}
-                                </a>
-                                <a class="dropdown-item text-primary" href="{{route('manage.language',[isset($lang)?$lang:'english'])}}">{{ __('Manage Language') }}</a>
-                            @endif
-                    </div>
-                </li>
-            </ul>
         </div>
     </div>
     </header>
-    <div id="pageloader" class="hidden Ploader" style="display: none">
-    Loading ...
-  </div>  

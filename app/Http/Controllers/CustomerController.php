@@ -35,7 +35,7 @@ class CustomerController extends Controller
     {
         if(\Auth::user()->can('manage customer'))
         {
-            $customers = Customer::where('created_by', \Auth::user()->creatorId())->get();
+            $customers = Customer::where('created_by', \Auth::user()->creatorId())->orderBy('id', 'DESC')->get();
 
             return view('customer.index', compact('customers'));
         }
@@ -100,7 +100,7 @@ class CustomerController extends Controller
                 $customer                  = new Customer();
                 $customer->customer_id     = $this->customerNumber();
                 $customer->name            = $request->name;
-                $customer->contact         = "+231".$request->contact;
+                $customer->contact         = "+230".$request->contact;
                 $customer->email           = $request->email;
                 $customer->business_registration_number           = $request->business_registration_number;
                 $customer->buyer_type           = $request->buyer_type;
@@ -125,8 +125,7 @@ class CustomerController extends Controller
                 $customer->shipping_address = $request->shipping_address;
 
                 $customer->lang = !empty($default_language) ? $default_language->value : '';
-// print_r($customer);
-// die;
+
                 $customer->save();
                 CustomField::saveData($customer, $request->customField);
             }
@@ -149,8 +148,12 @@ class CustomerController extends Controller
                 Utility::send_twilio_msg($request->contact,'new_customer', $customerNotificationArr);
             }
 
-
-            return redirect()->route('customer.index')->with('success', __('Customer successfully created.'));
+            $domName = $_SERVER['HTTP_REFERER'];
+            if (strpos($domName, "invoice/create") == false) { 
+                return redirect()->route('customer.index')->with('success', __('Customer successfully created.'));
+            } else{
+                return redirect()->intended($domName)->with('success', __('Customer successfully created.'));
+            }
         }
         else
         {
@@ -180,7 +183,8 @@ class CustomerController extends Controller
         {
             $customer              = Customer::find($id);
             $customer->customField = CustomField::getData($customer, 'customer');
-            $customer->contact = ltrim($customer->contact,'+231');  
+            $customer->contact = ltrim($customer->contact,'+230');
+            $customer->billing_phone=$customer->billing_phone;  
             $customFields = CustomField::where('created_by', '=', \Auth::user()->creatorId())->where('module', '=', 'customer')->get();
 
             return view('customer.edit', compact('customer', 'customFields'));
@@ -215,10 +219,10 @@ class CustomerController extends Controller
 
                 return redirect()->route('customer.index')->with('error', $messages->first());
             }
-            if (strpos($request->contact, "+231") === 0) {
+            if (strpos($request->contact, "+230") === 0) {
                 $request->contact=$request->contact;
             }else{
-                $request->contact= "+231".$request->contact;
+                $request->contact= "+230".$request->contact;
             }
             $customer->name             = $request->name;
             $customer->contact          = $request->contact;
@@ -486,7 +490,8 @@ class CustomerController extends Controller
     public function export()
     {
         $name = 'customer_' . date('Y-m-d i:h:s');
-        $data = Excel::download(new CustomerExport(), $name . '.xlsx'); ob_end_clean();
+        $data = Excel::download(new CustomerExport(), $name . '.xlsx'); 
+        ob_end_clean();
 
         return $data;
     }
@@ -502,7 +507,7 @@ class CustomerController extends Controller
         $rules = [
             'file' => 'required|mimes:csv,txt',
         ];
-
+     
         $validator = \Validator::make($request->all(), $rules);
 
         if($validator->fails())
@@ -520,7 +525,11 @@ class CustomerController extends Controller
             for($i = 1; $i <= count($customers) - 1; $i++)
             {
                 $customer = $customers[$i];
-
+                if (strpos($customer[3], "+230") === 0) {
+                    $customer[3]=$customer[3];
+                }else{
+                    $customer[3]= "+230".$customer[3];
+                }
                 $customerByEmail = Customer::where('email', $customer[2])->first();
                 if(!empty($customerByEmail))
                 {
@@ -532,7 +541,7 @@ class CustomerController extends Controller
                     $customerData->customer_id      = $this->customerNumber();
                 }
 
-                $customerData->customer_id             = $customer[0];
+                $customerData->customer_id             =  $customerData->customer_id;
                 $customerData->name             = $customer[1];
                 $customerData->email            = $customer[2];
                 $customerData->contact          = $customer[3];
@@ -551,9 +560,14 @@ class CustomerController extends Controller
                 $customerData->shipping_phone   = $customer[15];
                 $customerData->shipping_zip     = $customer[16];
                 $customerData->shipping_address = $customer[17];
-                $customerData->balance          = $customer[18];
+             
+                $customerData->tax_number           = $customer[18];
+                $customerData->business_registration_number  = $customer[19];
+                $customerData->buyer_type           = $customer[20];
+                $customerData->transaction_nature          = $customer[21];
+                $customerData->nic_number            = $customer[22];
                 $customerData->created_by       = \Auth::user()->creatorId();
-
+// print_r(customerD)
                 if(empty($customerData))
                 {
                     $errorArray[] = $customerData;

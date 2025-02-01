@@ -3,14 +3,17 @@
     {{__('Manage Chart of Account Type')}}
 @endsection
 
-@section('action-button')
-    <div class="all-button-box row d-flex justify-content-end">
+@section('action-btn')
+    <div class="float-end">
         @can('create constant chart of account type')
-            <div class="col-xl-2 col-lg-2 col-md-4 col-sm-6 col-6">
-                <a href="#" data-url="{{ route('chart-of-account-type.create') }}" data-ajax-popup="true" data-title="{{__('Create New Type')}}" class="btn btn-xs btn-white btn-icon-only width-auto">
-                    <i class="ti ti-plus"></i> {{__('Create')}}
-                </a>
-            </div>
+            <a href="#" data-url="{{ route('chart-of-account-type.create') }}" data-bs-toggle="tooltip" title="{{ __('Create') }}"
+                data-size="lg" data-ajax-popup="true" data-title="{{ __('Create New Account Type') }}" class="btn btn-sm btn-primary">
+                <i class="ti ti-plus"></i> Create Account Type
+            </a>
+            <a href="#" data-url="{{ route('charofAccount.createSubType') }}" data-bs-toggle="tooltip" title="{{ __('Create') }}"
+                data-size="lg" data-ajax-popup="true" data-title="{{ __('Create New Account Sub Type') }}" class="btn btn-sm btn-primary">
+                <i class="ti ti-plus"></i> Create Account Sub Type
+            </a>
         @endcan
     </div>
 @endsection
@@ -23,31 +26,62 @@
                         <table class="table table-striped mb-0 dataTable">
                             <thead>
                             <tr>
-                                <th> {{__('Name')}}</th>
+                                <th> {{__('type Name')}}</th>
+                                <th> {{__('Sub type Name')}}</th>
                                 <th> {{__('Action')}}</th>
                             </tr>
                             </thead>
                             <tbody>
-                            @foreach ($types as $type)
-                                <tr>
-                                    <td>{{ $type->name }}</td>
-                                    <td class="Action">
-                                        <span>
+                          
+                            @foreach ($account_subtype as $key => $type)
+                          
+                            <tr>
+                               <td>{{ $key }}</td>
+                               <td></td>
+                               @foreach ($type as $skey => $subtypename)
+                               @if($skey==0)
+                               <td class="Action">
+                               <span>
                                             @can('edit constant chart of account type')
-                                                <a href="#" class="edit-icon" data-url="{{ route('chart-of-account-type.edit',$type->id) }}" data-ajax-popup="true" data-title="{{__('Edit Unit')}}" data-bs-toggle="tooltip" data-original-title="{{__('Edit')}}">
-                                                <i class="ti ti-pencil text-white"></i>
+                                                <a href="#" class="edit-icon" data-url="{{ route('chart-of-account-type.edit',$type[$skey]['typeId']) }}" data-ajax-popup="true" data-title="{{__('Edit Unit')}}" data-bs-toggle="tooltip" data-original-title="{{__('Edit')}}">
+                                                <i class="ti ti-pencil text-primary"></i>
                                             </a>
                                             @endcan
                                             @can('delete constant chart of account type')
-                                                <a href="#" class="delete-icon" data-bs-toggle="tooltip" data-original-title="{{__('Delete')}}" data-confirm="{{__('Are You Sure?').'|'.__('This action can not be undone. Do you want to continue?')}}" data-confirm-yes="document.getElementById('delete-form-{{$type->id}}').submit();">
+                                                <a href="#" class="delete-icon" data-bs-toggle="tooltip" data-original-title="{{__('Delete')}}" data-confirm="{{__('Are You Sure?').'|'.__('This action can not be undone. Do you want to continue?')}}" data-confirm-yes="document.getElementById('delete-form-{{$type[$skey]['typeId']}}').submit();">
                                                 <i class="ti ti-trash"></i>
                                             </a>
-                                                {!! Form::open(['method' => 'DELETE', 'route' => ['chart-of-account-type.destroy', $type->id],'id'=>'delete-form-'.$type->id]) !!}
+                                                {!! Form::open(['method' => 'DELETE', 'route' => ['chart-of-account-type.destroy', $type[$skey]['typeId']],'id'=>'delete-form-'.$type[$skey]['typeId']]) !!}
+                                                {!! Form::close() !!}
+                                            @endcan
+                                        </span>
+                               </td>
+                               @endif
+                               @endforeach
+                            </tr>
+                          
+                                @foreach ($type as $skey => $subtypename)
+                                <tr>
+                                    <td></td>
+                                    <td> {{$subtypename['name']}}</td>    
+                                    <td class="Action">
+                                    <span>
+                                            @can('edit constant chart of account type')
+                                                <a href="#" class="edit-icon" data-url="{{ route('charofAccount.subTypeEdit',$subtypename['id']) }}" data-ajax-popup="true" data-title="{{__('Edit Unit')}}" data-bs-toggle="tooltip" data-original-title="{{__('Edit')}}">
+                                                <i class="ti ti-pencil text-primary"></i>
+                                            </a>
+                                            @endcan
+                                            @can('delete constant chart of account type')
+                                                <a href="#" class="delete-icon" data-bs-toggle="tooltip" data-original-title="{{__('Delete')}}" data-confirm="{{__('Are You Sure?').'|'.__('This action can not be undone. Do you want to continue?')}}" data-confirm-yes="document.getElementById('delete-form-{{$subtypename['id']}}').submit();">
+                                                <i class="ti ti-trash"></i>
+                                            </a>
+                                                {!! Form::open(['method' => 'DELETE', 'route' => ['chart-of-account-type.destroy', $subtypename['id']],'id'=>'delete-form-'.$subtypename['id']]) !!}
                                                 {!! Form::close() !!}
                                             @endcan
                                         </span>
                                     </td>
                                 </tr>
+                                @endforeach 
                             @endforeach
                             </tbody>
                         </table>

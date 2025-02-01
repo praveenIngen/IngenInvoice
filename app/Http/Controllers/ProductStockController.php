@@ -20,7 +20,7 @@ class ProductStockController extends Controller
         if(\Auth::user()->can('manage product & service'))
         {
 
-            $productServices = ProductService::where('created_by', '=', \Auth::user()->creatorId())->where('type', '=', 'product')->get();
+            $productServices = ProductService::where('created_by', '=', \Auth::user()->creatorId())->where('type', '=', 'GOODS')->get();
 
 
             return view('productstock.index', compact('productServices'));

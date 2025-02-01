@@ -2917,7 +2917,7 @@ textarea.form-control-lg {
 .input-group-text {
     display: flex;
     align-items: center;
-    padding: 0.575rem 1rem;
+    padding: 0.575rem 0.5rem;
     font-size: 0.875rem;
     font-weight: 400;
     line-height: 1.5;
@@ -3836,6 +3836,14 @@ textarea.is-invalid.dataTable-input {
         right: 0;
         left: auto;
     }
+    #input-wrapper span.CountryCode {
+        z-index: 99;
+        /* line-height: 25px; */
+        padding: 8px;
+        position: sticky;
+        /* top: 60%; */
+        margin-left: -30%;
+    }
 }
 
 @media (min-width: 1400px) {
@@ -3856,8 +3864,90 @@ textarea.is-invalid.dataTable-input {
         right: 0;
         left: auto;
     }
+    #input-wrapper .CountryCode {
+        position: absolute;
+      }
+      
+      #input-wrapper span.CountryCode {
+          z-index: 99;
+          /* line-height: 25px; */
+          /* padding: 8px;  */
+          position: sticky;
+          /* top: 60%; */
+          margin-left: -31%;
+      }
+      
+      #input-wrapper .form-control {
+        /* height: 25px; */
+        text-indent: 35px;
+        display: block;
+          width: 100%;
+          padding: 0.575rem 1rem;
+          font-size: 0.875rem;
+          font-weight: 400;
+          line-height: 1.5;
+          color: #293240;
+          background-color: #ffffff;
+          background-clip: padding-box;
+          border: 1px solid #ced4da;
+          -webkit-appearance: none;
+          -moz-appearance: none;
+          appearance: none;
+          border-radius: 6px;
+          transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+      }
 }
 
+    #input-wrapper .CountryCode {
+        position: absolute;
+      }
+      #input-wrapper span.errorTop {
+       
+        top: 26% !important;
+        
+    }
+    #input-wrapper span.errorTopCompany {
+        top: 200px !important;
+    }
+      #input-wrapper span.CountryCode {
+          z-index: 99;
+          /* line-height: 25px; */
+          /* padding: 8px;  */
+          position: sticky;
+          /* top: 48%; */
+          margin-left: -31%;
+      }
+      
+      #input-wrapper .form-control {
+        /* height: 25px; */
+        text-indent: 35px;
+        display: block;
+          width: 100%;
+          padding: 0.575rem 1rem;
+          font-size: 0.875rem;
+          font-weight: 400;
+          line-height: 1.5;
+          color: #293240;
+          background-color: #ffffff;
+          background-clip: padding-box;
+          border: 1px solid #ced4da;
+          -webkit-appearance: none;
+          -moz-appearance: none;
+          appearance: none;
+          border-radius: 6px;
+          transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+      }
+      @media (max-width: 1700px) {
+ 
+        #input-wrapper span.CountryCode {
+            z-index: 99;
+            /* line-height: 25px; */
+            /* padding: 8px;  */
+            position: sticky;
+            top: 66%;
+            margin-left: -31%;
+        }
+      }
 .dropup .dropdown-menu[data-bs-popper] {
     top: auto;
     bottom: 100%;
@@ -3875,7 +3965,17 @@ textarea.is-invalid.dataTable-input {
     border-bottom: 0.3em solid;
     border-left: 0.3em solid transparent;
 }
-
+.width100{
+    width:100%;
+    margin-bottom: 6px;
+}
+a.align-items-center.disabled {
+    pointer-events: none;
+    cursor: default;
+  }
+.padding0{
+    padding:5px;
+}
 .dropup .dropdown-toggle:empty::after {
     margin-left: 0;
 }
@@ -9270,7 +9370,22 @@ textarea.is-invalid.dataTable-input {
 .rounded-circle {
     border-radius: 50% !important;
 }
+.card-body .text-primary.companyName{
+    display: inline-block;
+    width: 236px;
+    white-space: nowrap;
+    overflow-x: clip;
+text-overflow: ellipsis;
+}
 
+.form-group.price-input {
+margin-bottom:12px;
+}
+.ui-sortable select.item.disabled {
+    pointer-events: none;
+    cursor: default;
+    background: lightgray;
+  }
 .rounded-pill {
     border-radius: var(--bs-border-radius-pill) !important;
 }
@@ -29082,6 +29197,19 @@ body.anim-slip-from-top.modal-open .dash-header {
     padding: 0.7rem 0.75rem;
 }
 
+.table td.flexibleTax {
+    border-top: 1px solid #f1f1f1;
+    border-bottom: 1px solid #f1f1f1;
+    white-space: normal;
+    padding: 0.7rem 0.75rem;
+}
+.table td input.priceInput {
+    border:none;
+    margin-bottom: 15px;
+}
+.table td div.priceWidth{
+    width: 82px;
+}
 .table thead th {
     border-bottom: 1px solid #f1f1f1;
     font-size: 13px;

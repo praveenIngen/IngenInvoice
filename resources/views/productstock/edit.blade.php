@@ -1,4 +1,6 @@
-{{ Form::model($productService, array('route' => array('productstock.update', $productService->id), 'method' => 'PUT', 'class'=>'needs-validation', 'novalidate')) }}
+
+
+{{ Form::model($productService, array('route' => array('productstock.update', $productService->id), 'method' => 'PUT', 'class'=>'needs-validation')) }}
 <div class="modal-body">
     <div class="row">
 

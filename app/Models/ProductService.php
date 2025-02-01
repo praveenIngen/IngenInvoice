@@ -85,7 +85,7 @@ class ProductService extends Model
     public static function getallproducts()
     {
         return ProductService::select('product_services.*', 'c.name as categoryname')
-            ->where('product_services.type', '=', 'product')
+            ->where('product_services.type', '=', 'GOODS')
             ->leftjoin('product_service_categories as c', 'c.id', '=', 'product_services.category_id')
             ->where('product_services.created_by', '=', Auth::user()->creatorId())
             ->orderBy('product_services.id', 'DESC');

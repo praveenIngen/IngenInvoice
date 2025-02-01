@@ -5,15 +5,11 @@
 @endphp
 <!-- [ Main Content ] end -->
 <footer class="dash-footer">
-    <div class="footer-wrapper">
-        <div class="py-1">
-            <p class="mb-0 text-muted"> &copy;
-                {{ date('Y') }} {{ $setting['footer_text'] ? $setting['footer_text'] : config('app.name', 'ERPGo') }}
-            </p>
-        </div>
-    </div>
+   
 </footer>
-
+<div id="pageloader" class="hidden Ploader" style="display: none">
+  
+  </div>  
 
 <!-- Warning Section Ends -->
 <!-- Required Js -->
@@ -28,14 +24,18 @@
 <script src="{{ asset('assets/js/plugins/bootstrap.min.js') }}"></script>
 <script src="{{ asset('assets/js/plugins/feather.min.js') }}"></script>
 <script src="{{ asset('assets/js/dash.js') }}"></script>
-<!-- <script src="{{ asset('js/moment.min.js') }}"></script> -->
+<script src="{{ asset('js/moment.min.js') }}"></script>
 
 <script src="{{ asset('assets/js/plugins/bootstrap-switch-button.min.js') }}"></script>
 
+<script src="{{ asset('assets/js/plugins/sweetalert2.all.min.js') }}"></script>
 <script src="{{ asset('assets/js/plugins/simple-datatables.js') }}"></script>
 
 <!-- Apex Chart -->
-
+<script src="{{ asset('assets/js/plugins/apexcharts.min.js') }}"></script>
+<script src="{{ asset('assets/js/plugins/main.min.js') }}"></script>
+<script src="{{ asset('assets/js/plugins/choices.min.js') }}"></script>
+<script src="{{ asset('assets/js/plugins/flatpickr.min.js') }}"></script>
 
 <script src="{{ asset('js/jscolor.js') }}"></script>
 

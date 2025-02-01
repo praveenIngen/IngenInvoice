@@ -35,7 +35,7 @@
     <div class="float-end">
         @can('create credit note')
             <a href="#" data-url="{{ route('invoice.custom.credit.notes') }}"data-bs-toggle="tooltip" title="{{__('Create')}}" data-ajax-popup="true" data-title="{{__('Create New Credit Note')}}" class="btn btn-sm btn-primary">
-                <i class="ti ti-plus"></i>
+                <i class="ti ti-plus"></i>Create Credit
             </a>
         @endcan
     </div>
@@ -56,7 +56,7 @@
                                 <th> {{__('Credit Issue Date')}}</th>
                                 <th> {{__('Credit Amount')}}</th>
                                 <th> {{__('Description')}}</th>
-                                <th width="10%"> {{__('Action')}}</th>
+                                <th width="10%" class="actionTab"> {{__('Action')}}</th>
                             </tr>
                             </thead>
                             <tbody>
@@ -79,8 +79,9 @@
                                                             <i class="ti ti-eye text-white"></i>
                                                         </a>
                                                     </div>
+           
                                                     <div class="action-btn bg-primary ms-2">
-                                                        <a data-url="{{ route('invoice.edit.credit.notes',[$creditNote->invoice,$creditNote->id]) }}" data-ajax-popup="true" data-title="{{__('Edit Credit Note')}}" href="#" class="mx-3 btn btn-sm align-items-center" data-bs-toggle="tooltip" title="{{__('Edit')}}" data-original-title="{{__('Edit')}}">
+                                                        <a data-url="{{ route('invoice.edit.credit.notes',[$creditNote->invoice,$creditNote->id]) }}" data-ajax-popup="true" data-title="{{__('Edit Credit Note')}}" href="#" class="mx-3 btn btn-sm align-items-center {{ $invoice->getDue()<=0?'disabled':false }}" data-bs-toggle="tooltip" title="{{__('Edit')}}" data-original-title="{{__('Edit')}}">
                                                             <i class="ti ti-pencil text-white"></i>
                                                         </a>
                                                     </div>

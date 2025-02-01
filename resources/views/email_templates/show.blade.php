@@ -73,7 +73,7 @@
             <div class="card">
                 <div class="card-body ">
                     {{-- <div class="card"> --}}
-                    {{Form::model($currEmailTempLang, array('route' => array('email_template.update', $currEmailTempLang->parent_id), 'method' => 'PUT', 'class'=>'needs-validation', 'novalidate')) }}
+                    {{Form::model($currEmailTempLang, array('route' => array('email_template.update', $currEmailTempLang->parent_id), 'method' => 'PUT', 'class'=>'needs-validation')) }}
                     <div class="row">
                         <div class="col-lg-12 col-md-12 col-sm-12">
                             <h6 class="font-weight-bold pb-1">{{__('Placeholders')}}</h6>
@@ -82,7 +82,7 @@
                                 <div class="card-body">
                                     <div class="row text-xs">
 
-                                        @if($emailTemplate->slug=='new_user')
+                                        @if($emailTemplate->slug=="new_user" || $emailTemplate->slug=="new_user_login_disabled" || $emailTemplate->slug=="enable_dashboard_login")
                                             <div class="row">
                                                 <p class="col-4">{{__('App Name')}} : <span class="pull-end text-primary">{app_name}</span></p>
                                                 <p class="col-4">{{__('Company Name')}} : <span class="pull-right text-primary">{company_name}</span></p>
@@ -90,6 +90,7 @@
                                                 <p class="col-4">{{__('Email')}} : <span class="pull-right text-primary">{email}</span></p>
                                                 <p class="col-4">{{__('Password')}} : <span class="pull-right text-primary">{password}</span></p>
                                             </div>
+                                   
                                         @elseif($emailTemplate->slug=='new_client')
                                             <div class="row">
                                                 <p class="col-4">{{__('App Name')}} : <span class="pull-end text-primary">{app_name}</span></p>

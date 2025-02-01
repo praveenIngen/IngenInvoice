@@ -28,14 +28,14 @@ $profile=\App\Models\Utility::get_file('uploads/avatar/');
 @section('action-btn')
     <div class="float-end">
         <a href="#" data-size="md"  data-bs-toggle="tooltip" title="{{__('Import')}}" data-url="{{ route('customer.file.import') }}" data-ajax-popup="true" data-title="{{__('Import customer CSV file')}}" class="btn btn-sm btn-primary">
-            <i class="ti ti-file-import"></i>
+            <i class="ti ti-file-import"></i>Import
         </a>
         <a href="{{route('customer.export')}}" data-bs-toggle="tooltip" title="{{__('Export')}}" class="btn btn-sm btn-primary">
-            <i class="ti ti-file-export"></i>
+            <i class="ti ti-file-export"></i>Export
         </a>
 
         <a href="#" data-size="lg" data-url="{{ route('customer.create') }}" data-ajax-popup="true" data-bs-toggle="tooltip" title="{{__('Create')}}" data-title="{{__('Create Customer')}}" class="btn btn-sm btn-primary">
-            <i class="ti ti-plus"></i>
+            <i class="ti ti-plus"></i>Add Customer
         </a>
     </div>
 @endsection
@@ -55,7 +55,7 @@ $profile=\App\Models\Utility::get_file('uploads/avatar/');
                                 <th> {{__('Contact')}}</th>
                                 <th> {{__('Email')}}</th>
                                 <th> {{__('Balance')}}</th>
-                                <th>{{__('Action')}}</th>
+                                <th class="actionTab">{{__('Action')}}</th>
                             </tr>
                             </thead>
                             <tbody>

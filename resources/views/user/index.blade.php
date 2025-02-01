@@ -24,16 +24,11 @@
 @endsection
 @section('action-btn')
     <div class="float-end">
-        @if (\Auth::user()->type == 'company' || \Auth::user()->type == 'HR')
-            <a href="{{ route('user.userlog') }}" class="btn btn-primary btn-sm {{ Request::segment(1) == 'user' }}"
-                data-bs-toggle="tooltip" data-bs-placement="top" title="{{ __('User Logs History') }}"><i
-                    class="ti ti-user-check"></i>
-            </a>
-        @endif
+    
         @can('create user')
             <a href="#" data-size="lg" data-url="{{ route('users.create') }}" data-ajax-popup="true"
                 data-bs-toggle="tooltip" data-title="{{ \Auth::user()->type == 'super admin' ?  __('Create Company')  : __('Create User') }}" class="btn btn-sm btn-primary">
-                <i class="ti ti-plus"></i>
+                <i class="ti ti-plus"></i>Add User
             </a>
         @endcan
     </div>
@@ -42,6 +37,8 @@
     <div class="row">
         <div class="col-xxl-12">
             <div class="row">
+               
+            @if(isset($users[0]) && $users[0]->exists==1)
                 @foreach ($users as $user)
                     <div class="col-md-3 mb-4">
                         <div class="card text-center card-2">
@@ -86,7 +83,7 @@
                                                             'route' => ['users.destroy', $user['id']],
                                                             'id' => 'delete-form-' . $user['id'],
                                                         ]) !!}
-                                                        <a href="#!" class="dropdown-item bs-pass-para">
+                                                        <a href="#!" class="dropdown-item bs-pass-para" data-confirm="{{  __('This action will delete the user. Do you want to continue?') }}">
                                                             <i class="ti ti-archive"></i>
                                                             <span>
                                                                 @if ($user->delete_status != 0)
@@ -99,14 +96,7 @@
                                                         {!! Form::close() !!}
                                                     @endcan
 
-                                                    @if (Auth::user()->type == 'super admin')
-                                                        <a href="{{ route('login.with.company', $user->id) }}"
-                                                            class="dropdown-item"
-                                                            data-bs-original-title="{{ __('Login As Company') }}">
-                                                            <i class="ti ti-replace"></i>
-                                                            <span> {{ __('Login As Company') }}</span>
-                                                        </a>
-                                                    @endif
+                                                  
 
                                                     <a href="#!"
                                                         data-url="{{ route('users.reset', \Crypt::encrypt($user->id)) }}"
@@ -151,26 +141,23 @@
                                     <img src="{{ !empty($user->avatar) ? asset(Storage::url('uploads/avatar/' . $user->avatar)) : asset(Storage::url('uploads/avatar/avatar.png')) }}"
                                         class="img-user wid-80 round-img rounded-circle">
                                 </div>
-                                <h4 class=" mt-3 text-primary">{{ $user->name }}</h4>
+                                <h4 class=" mt-3 text-primary companyName" style="text-align:center">{{ $user->name }}</h4>
                                 @if ($user->delete_status == 0)
                                     <h5 class="office-time mb-0">{{ __('Soft Deleted') }}</h5>
                                 @endif
                                 <small class="text-primary">{{ $user->email }}</small>
                                 <p></p>
-                                <div class="text-center" data-bs-toggle="tooltip" title="{{ __('Last Login') }}">
-                                    {{ !empty($user->last_login_at) ? $user->last_login_at : '' }}
-                                </div>
                                 @if (\Auth::user()->type == 'super admin')
                                     <div class="mt-4">
                                         <div class="row justify-content-between align-items-center">
-                                            <div class="col-6 text-center Id ">
+                                            <div class="col-6 width100 text-center Id ">
                                                 <a href="#" data-url="{{ route('plan.upgrade', $user->id) }}"
-                                                    data-size="lg" data-ajax-popup="true" class="btn btn-outline-primary"
+                                                    data-size="lg" data-ajax-popup="true" class=" padding0 btn btn-outline-primary"
                                                     data-title="{{ __('Upgrade Plan') }}">{{ __('Upgrade Plan') }}</a>
                                             </div>
-                                            <div class="col-6 text-center Id ">
+                                            <div class="col-6 width100 text-center Id ">
                                                 <a href="#" data-url="{{ route('company.info', $user->id) }}"
-                                                    data-size="lg" data-ajax-popup="true" class="btn btn-outline-primary"
+                                                    data-size="lg" data-ajax-popup="true" class="padding0 btn btn-outline-primary"
                                                     data-title="{{ __('Company Info') }}">{{ __('AdminHub') }}</a>
                                             </div>
                                             <div class="col-12">
@@ -182,7 +169,7 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="row mt-3">
+                                    <div class="row">
                                         <div class="col-12 col-sm-12">
                                             <div class="card mb-0">
                                                 <div class="card-body p-3">
@@ -215,6 +202,13 @@
                         </div>
                     </div>
                 @endforeach
+            @else
+                <div class="col-md-12 mb-4">
+                    <div class="card text-center card-2">
+                        <p>No record exist</p> 
+                    </div>
+                </div>
+            @endif
             </div>
         </div>
     </div>

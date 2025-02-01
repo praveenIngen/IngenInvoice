@@ -25,12 +25,12 @@ use Spatie\Permission\Models\Role;
 class VenderController extends Controller
 {
 
-    public function dashboard()
-    {
-        $data['billChartData'] = \Auth::user()->billChartData();
+    // public function dashboard()
+    // {
+    //     $data['billChartData'] = \Auth::user()->billChartData();
 
-        return view('vender.dashboard', $data);
-    }
+    //     return view('vender.dashboard', $data);
+    // }
 
     public function index()
     {
@@ -38,7 +38,7 @@ class VenderController extends Controller
         {
             $venders = Vender::where('created_by', \Auth::user()->creatorId())->get();
 
-            return view('vender.index', compact('venders'));
+            return view('vender.index')->with('venders', $venders);
         }
         else
         {
@@ -64,8 +64,10 @@ class VenderController extends Controller
 
     public function store(Request $request)
     {
+        
         if(\Auth::user()->can('create vender'))
         {
+           
             $rules = [
                 'name' => 'required',
                 'contact' => 'required|regex:/^([0-9\s\-\+\(\)]*)$/',
@@ -95,12 +97,16 @@ class VenderController extends Controller
                 $default_language = DB::table('settings')->select('value')->where('name', 'default_language')->first();
                 if($total_vendor < $plan->max_venders || $plan->max_venders == -1)
                 {
+                    //vat_registration_number coming as tax number
                     $vender                   = new Vender();
                     $vender->vender_id        = $this->venderNumber();
                     $vender->name             = $request->name;
-                    $vender->contact          = $request->contact;
+                    $vender->contact          = "+230".$request->contact;
                     $vender->email            = $request->email;
                     $vender->tax_number       = $request->tax_number;
+                    $vender->trade_name       = $request->trade_name;
+                    $vender->contact          = $request->contact;
+                    $vender->business_registration_number =$request->business_registration_number;
                     $vender->created_by       = \Auth::user()->creatorId();
                     $vender->billing_name     = $request->billing_name;
                     $vender->billing_country  = $request->billing_country;
@@ -118,19 +124,20 @@ class VenderController extends Controller
                     $vender->shipping_address = $request->shipping_address;
                     $vender->lang             = !empty($default_language) ? $default_language->value : '';
                     $vender->save();
-                    $request->contact_number= $request->contact;
-                    $request->Vat_registration_number=$request->tax_number;
+                 
                     CustomField::saveData($vender, $request->customField);
-                    SellerDetail::saveData($request,0,$vender->id,0,  $vender->created_by );
+                    // SellerDetail::saveData($request,NULL,$vender->id,NULL,  $vender->created_by );
                 }
                 else
                 {
                     return redirect()->back()->with('error', __('Your user limit is over, Please upgrade plan.'));
                 }
-                $role_r = Role::where('name', '=', 'vender')->firstOrFail();
-                $vender->assignRole($role_r); //Assigning role to user
-                $vender->type     = 'Vender';
-
+             
+                // $role_r = Role::where('name', '=', 'vender')->firstOrFail();
+                // $vender->assignRole($role_r); //Assigning role to user
+                // $vender->type     = 'Vender';
+                // print_r("testing value ");
+                // die;
 
             //For Notification
             $setting  = Utility::settings(\Auth::user()->creatorId());
@@ -176,6 +183,7 @@ class VenderController extends Controller
         {
             $vender              = Vender::find($id);
             $vender->customField = CustomField::getData($vender, 'vendor');
+            $vender->contact = ltrim($vender->contact,'+230');
             $customFields = CustomField::where('created_by', '=', \Auth::user()->creatorId())->where('module', '=', 'vendor')->get();
             $sellerDetail = SellerDetail::getDataByVenderid($vender->id);
             return view('vender.edit', compact('vender', 'customFields','sellerDetail'));
@@ -207,6 +215,11 @@ class VenderController extends Controller
                 return redirect()->route('vender.index')->with('error', $messages->first());
             }
 
+            if (strpos($request->contact, "+230") === 0) {
+                $request->contact=$request->contact;
+            }else{
+                $request->contact= "+230".$request->contact;
+            }
             $vender->name             = $request->name;
             $vender->contact          = $request->contact;
             $vender->tax_number      = $request->tax_number;
@@ -231,7 +244,7 @@ class VenderController extends Controller
             CustomField::saveData($vender, $request->customField);
             // print_r($request);
             // die;
-            SellerDetail::saveData($request,0,$vender->id,0, $vender->created_by );
+            SellerDetail::saveData($request,NULL,$vender->id,NULL, $vender->created_by );
 
             return redirect()->route('vender.index')->with('success', __('Vendor successfully updated.'));
         }

@@ -28,19 +28,7 @@
     $languages = App\Models\Utility::languages();
 @endphp
 
-@section('language-bar')
-    <div class="lang-dropdown-only-desk">
-        <li class="dropdown dash-h-item drp-language">
-            <a class="dash-head-link dropdown-toggle btn" href="#" data-bs-toggle="dropdown" aria-expanded="false">
-                <span class="drp-text">
-                </span>
-            </a>
-            <div class="dropdown-menu dash-h-dropdown dropdown-menu-end">
-             
-            </div>
-        </li>
-    </div>
-@endsection
+
 
 @section('content')
     <div class="card-body">

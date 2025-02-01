@@ -3,6 +3,13 @@
     {{__('Manage Product Stock')}}
 @endsection
 @push('script-page')
+<script>
+$(document).on('focusout', '#quantity', function () {
+    if (this.value < 1) this.value = 1; // minimum is 1
+    else this.value = Math.floor(this.value); 
+});
+
+</script>
 @endpush
 @section('breadcrumb')
     <li class="breadcrumb-item"><a href="{{route('dashboard')}}">{{__('Dashboard')}}</a></li>

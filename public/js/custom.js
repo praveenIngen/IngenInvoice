@@ -85,12 +85,7 @@ function validation() {
 $(document).ready(function () {
 
     if ($(".datatable").length > 0) {
-
-        // $("th a.dataTable-sorter").text()=="Action"){
-        //     $("th a.dataTable-sorter")
-        // }
         const dataTable =  new simpleDatatables.DataTable(".datatable");
-
     }
 
     select2();
@@ -120,7 +115,9 @@ $(document).ready(function () {
 function daterange() {
     if ($("#pc-daterangepicker-1").length > 0) {
         document.querySelector("#pc-daterangepicker-1").flatpickr({
-            mode: "range"
+            mode: "range",
+            dateFormat: "d-m-Y",
+            altInput: true,
         });
     }
 }
@@ -130,11 +127,13 @@ function select2() {
     if ($(".select2").length > 0) {
         $($(".select2")).each(function (index, element) {
             var id = $(element).attr('id');
+            if(id!=undefined){
             var multipleCancelButton = new Choices(
                 '#' + id, {
                     removeItemButton: true,
                 }
             );
+        }
         });
 
     }
@@ -157,9 +156,9 @@ $(document).on('click', 'a[data-ajax-popup="true"], button[data-ajax-popup="true
     var data = {};
     var title1 = $(this).data("title");
        // using non css framework method with Style
-       loader.style.display = 'block';
+    //    loader.style.display = 'block';
        // using a css framework such as TailwindCSS
-       loader.classList.remove('hidden');
+    //    loader.classList.remove('hidden');
     var title2 = $(this).data("bs-original-title");
     var title3 = $(this).data("original-title");
     var title = (title1 != undefined) ? title1 : title2;
@@ -186,10 +185,10 @@ $(document).on('click', 'a[data-ajax-popup="true"], button[data-ajax-popup="true
         success: function (data) {
             $('#commonModal .body').html(data);
             $("#commonModal").modal('show');
-      
+           loader.style.display = 'none'
             common_bind("#commonModal");
             validation();
-        loader.style.display = 'none'
+   
 
         },
         error: function (data) {

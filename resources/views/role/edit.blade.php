@@ -1,4 +1,4 @@
-{{Form::model($role,array('route' => array('roles.update', $role->id), 'method' => 'PUT', 'class'=>'needs-validation', 'novalidate')) }}
+{{Form::model($role,array('route' => array('roles.update', $role->id), 'method' => 'PUT', 'class'=>'needs-validation')) }}
 <div class="modal-body">
     <div class="row">
         <div class="col-lg-12 col-md-12 col-sm-12">
@@ -15,15 +15,15 @@
                 <li class="nav-item">
                     <a class="nav-link active" id="pills-staff-tab" data-bs-toggle="pill" href="#staff" role="tab" aria-controls="pills-home" aria-selected="true">{{__('Staff')}}</a>
                 </li>
-                <li class="nav-item">
+                <!-- <li class="nav-item">
                     <a class="nav-link" id="pills-crm-tab" data-bs-toggle="pill" href="#crm" role="tab" aria-controls="pills-profile" aria-selected="false">{{__('CRM')}}</a>
-                </li>
-                <li class="nav-item">
+                </li> -->
+                <!-- <li class="nav-item">
                     <a class="nav-link" id="pills-project-tab" data-bs-toggle="pill" href="#project" role="tab" aria-controls="pills-contact" aria-selected="false">{{__('Project')}}</a>
-                </li>
-                <li class="nav-item">
+                </li> -->
+                <!-- <li class="nav-item">
                     <a class="nav-link" id="pills-hrmpermission-tab" data-bs-toggle="pill" href="#hrmpermission" role="tab" aria-controls="pills-contact" aria-selected="false">{{__('HRM')}}</a>
-                </li>
+                </li> -->
                 <li class="nav-item">
                     <a class="nav-link" id="pills-account-tab" data-bs-toggle="pill" href="#account" role="tab" aria-controls="pills-contact" aria-selected="false">{{__('Account')}}</a>
                 </li>
@@ -35,7 +35,7 @@
             <div class="tab-content" id="pills-tabContent">
                 <div class="tab-pane fade show active" id="staff" role="tabpanel" aria-labelledby="pills-home-tab">
                     @php
-                        $modules=['user','role','client','product & service','constant unit','constant tax','constant category', 'zoom meeting','company settings'];
+                        $modules=['user','role','product & service','constant unit','constant tax','constant category'];
                        if(\Auth::user()->type == 'company'){
                            $modules[] = 'language';
                            $modules[] = 'permission';
@@ -915,7 +915,7 @@
                 </div>
                 <div class="tab-pane fade" id="account" role="tabpanel" aria-labelledby="pills-contact-tab">
                     @php
-                        $modules=['account dashboard','proposal','invoice','bill','revenue','payment','proposal product','invoice product','bill product','goal','credit note','debit note','bank account','bank transfer','transaction','customer','vender','constant custom field','assets','chart of account','journal entry','report'];
+                        $modules=['account dashboard','invoice','invoice product','credit note','customer','vender','chart of account','chart of account Type'];
                     @endphp
                     <div class="col-md-12">
                         <div class="form-group">
@@ -1134,7 +1134,7 @@
                 </div>
                 <div class="tab-pane fade" id="pos" role="tabpanel" aria-labelledby="pills-contact-tab">
                     @php
-                        $modules=['warehouse','quotation','purchase','pos','barcode'];
+                        $modules=['warehouse','pos'];
                     @endphp
                     <div class="col-md-12">
                         <div class="form-group">

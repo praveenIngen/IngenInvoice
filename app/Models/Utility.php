@@ -79,9 +79,9 @@ class Utility extends Model
 
         $settings = [
             "site_currency" => "USD",
-            "site_currency_symbol" => "$",
+            "site_currency_symbol" => "Rs",
             "site_currency_symbol_position" => "pre",
-            "site_date_format" => "M j, Y",
+            "site_date_format" => "d-m-Y",
             "site_time_format" => "g:i A",
             "timezone" => '',
             "company_name" => "",
@@ -127,7 +127,7 @@ class Utility extends Model
             "employee_prefix" => "#EMP00",
             'leave_status' => '1',
             "bug_prefix" => "#ISSUE",
-            'title_text' => 'ErpGo Saas',
+            'title_text' => 'moinvoice',
             'footer_text' => '',
             "company_start_time" => "09:00",
             "company_end_time" => "18:00",
@@ -191,6 +191,8 @@ class Utility extends Model
             "barcode_format" => "css",
 
             'new_user' => '1',
+            'new_user_login_disbaled' => '1',
+            'enable_dashboard_login' => '1',
             'new_client' => '1',
             'new_support_ticket' => '1',
             'lead_assigned' => '1',
@@ -300,9 +302,9 @@ class Utility extends Model
 
         $settings = [
             "site_currency" => "USD",
-            "site_currency_symbol" => "$",
+            "site_currency_symbol" => "Rs",
             "site_currency_symbol_position" => "pre",
-            "site_date_format" => "M j, Y",
+            "site_date_format" => "d-m-Y",
             "site_time_format" => "g:i A",
             "company_name" => "",
             "company_address" => "",
@@ -344,7 +346,7 @@ class Utility extends Model
             "employee_prefix" => "#EMP00",
             'leave_status' => '1',
             "bug_prefix" => "#ISSUE",
-            'title_text' => 'ErpGo Saas',
+            'title_text' => 'moinvoice',
             'footer_text' => '',
             "company_start_time" => "09:00",
             "company_end_time" => "18:00",
@@ -403,6 +405,8 @@ class Utility extends Model
             "barcode_format" => "css",
 
             'new_user' => '1',
+            'new_user_login_disbaled' => '1',
+            'enable_dashboard_login' => '1',
             'new_client' => '1',
             'new_support_ticket' => '1',
             'lead_assigned' => '1',
@@ -488,6 +492,8 @@ class Utility extends Model
 
     public static $emailStatus = [
         'new_user' => 'New User',
+        'new_user_login_disabled' => 'New User Login Disabled',
+        'enable_dashboard_login' => 'Enable Dashboard Login',
         'new_client' => 'New Client',
         'new_support_ticket' => 'New Support Ticket',
         'lead_assigned' => 'Lead Assigned',
@@ -627,11 +633,11 @@ class Utility extends Model
     {
         $number = explode('.', $price);
         $length = strlen(trim($number[0]));
-        $float_number = isset($settings['float_number']) && $settings['float_number'] == 'dot' ? '.' : ',';
+        $float_number = isset($settings['float_number']) && $settings['float_number'] == 'dot' ? '.' : '.';
         if($length > 3)
         {
-            $decimal_separator = $settings['decimal_separator'] == 'dot' ? ',' : ',';
-            $thousand_separator = $settings['thousand_separator'] == 'dot' ? '.' : ',';
+            $decimal_separator = $settings['decimal_separator'] == 'dot' ? '.' : '.';
+            $thousand_separator = $settings['thousand_separator'] == 'dot' ? ',' : '.';
         }
         else
         {
@@ -821,12 +827,12 @@ class Utility extends Model
         }
 
         if (!empty($user)) {
-            if ($type == 'credit') {
+            if ($type == "credit") {
                 $oldBalance = $user->balance;
                 $userBalance = $oldBalance + $amount;
                 $user->balance = $userBalance;
                 $user->save();
-            } elseif ($type == 'debit') {
+            } elseif ($type == "debit") {
                 $oldBalance = $user->balance;
                 $userBalance = $oldBalance - $amount;
                 $user->balance = $userBalance;
@@ -845,12 +851,12 @@ class Utility extends Model
     //  print_r($user->balance);
     //  die;
         if (!empty($user)) {
-            if ($type == 'credit') {
+            if ($type == "credit") {
                 $oldBalance = $user->balance;
                 $userBalance = $oldBalance - $amount;
                 $user->balance = $userBalance;
                 $user->save();
-            } elseif ($type == 'debit') {
+            } elseif ($type == "debit") {
                 $oldBalance = $user->balance;
                 $userBalance = $oldBalance + $amount;
                 $user->balance = $userBalance;
@@ -4213,9 +4219,10 @@ class Utility extends Model
                     $name = $name;
 
                     if ($settings['storage_setting'] == 'local') {
-//                    dd(\Storage::disk(),$path);
-                        $request->$key_name->move(storage_path($path), $name);
+               
+                        $request->$key_name->move(public_path('storage/'.$path), $name);
                         $path = $path . $name;
+                      
                     } else if ($settings['storage_setting'] == 'wasabi') {
 
                         $path = \Storage::disk('wasabi')->putFileAs(
@@ -5567,6 +5574,38 @@ class Utility extends Model
         return $chartExpenseArr;
     }
 
+
+
+
+    
+    public static function totalDashboardData($billArr, $expenseArr, $yearList)
+    {
+
+        $chartExpenseArr = [];
+        foreach ($yearList as $year) {
+
+                for ($i = 1; $i <= 12; $i++) {
+                    $chartbillArr[$year][] = $billArr[$year][$i];
+                    $chartexpenseArr[$year][] = $expenseArr[$year][$i];
+                }
+        }
+
+        if (isset($chartexpenseArr) && isset($chartbillArr)) {
+
+            foreach ($chartexpenseArr as $year => $values) {
+                if (isset($chartbillArr[$year])) {
+                    $chartExpenseArr[] = array_map(function ($a, $b) {
+                        return $a + $b;
+                    }, $chartexpenseArr[$year], $chartbillArr[$year]);
+                } else {
+                    $chartExpenseArr[$year] = $values;
+                }
+            }
+        }
+
+        return $chartExpenseArr;
+    }
+
     public static function totalSum($array, $request, $yearList)
     {
 
@@ -5597,12 +5636,40 @@ class Utility extends Model
         return $totalArr;
     }
 
+
+    public static function totalDashboardSum($array, $yearList)
+    {
+
+        $totalArr = [];
+        foreach ($yearList as $year) {
+
+            
+                for ($i = 1; $i <= 12; $i++) {
+                    $totalArr[$year][] = $array[$year][$i];
+                }
+            
+        }
+        return $totalArr;
+    }
+
     public static function emailTemplateLang($lang)
     {
 
         $defaultTemplate = [
             'new_user' => [
                 'subject' => 'New User',
+                'lang' => [
+                    'en' => '<p>Hello,&nbsp;<br>Welcome to {app_name}.</p><p><b>Email </b>: {email}<br><b>Password</b> : {password}</p><p>{app_url}</p><p>Thanks,<br>{app_name}</p>',
+                ],
+            ],
+            'new_user_login_disabled' => [
+                'subject' => 'New User Login Disabled',
+                'lang' => [
+                    'en' => '<p>Hello,&nbsp;<br>Welcome to {app_name}.</p><p><b>Email </b>: {email}<br><b>Password</b> : {password}</p><p>{app_url}</p><p>Thanks,<br>{app_name}</p>',
+                ],
+            ],
+            'enable_dashboard_login' => [
+                'subject' => 'Enable Dashboard Login',
                 'lang' => [
                     'en' => '<p>Hello,&nbsp;<br>Welcome to {app_name}.</p><p><b>Email </b>: {email}<br><b>Password</b> : {password}</p><p>{app_url}</p><p>Thanks,<br>{app_name}</p>',
                 ],

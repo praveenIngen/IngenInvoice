@@ -1,43 +1,4 @@
-<style>
-    #input-wrapper .CountryCode {
-  position: absolute;
-}
-
-#input-wrapper span.CountryCode {
-    z-index: 99;
-    /* line-height: 25px; */
-    padding: 8px;
-    top: 6%;
-    margin-left: -6%;
-}
-
-#input-wrapper .form-control {
-  /* height: 25px; */
-  text-indent: 35px;
-  display: block;
-    width: 100%;
-    padding: 0.575rem 1rem;
-    font-size: 0.875rem;
-    font-weight: 400;
-    line-height: 1.5;
-    color: #293240;
-    background-color: #ffffff;
-    background-clip: padding-box;
-    border: 1px solid #ced4da;
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    appearance: none;
-    border-radius: 6px;
-    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
-}
-    </style>
-    @push('script-page')
-    <script>
-        document.getElementById("number").addEventListener('change', function(e){
-    e.target.value = '+231' + e.target.value;
-});
-    </script>
-@endpush
+  
 {{Form::open(array('url'=>'customer','method'=>'post', 'id'=>'FormCreate','class'=>'needs-validation'))}}
 <div class="modal-body">
 
@@ -45,23 +6,23 @@
     <div class="row">
         <div class="col-lg-4 col-md-4 col-sm-6">
             <div class="form-group">
-                {{Form::label('name',__('Name'),array('class'=>'form-label')) }}<x-required></x-required>
-                {{Form::text('name',null,array('class'=>'form-control','required'=>'required' ,'placeholder'=>__('Name')))}}
+                {{Form::label('name',__('Full Name'),array('class'=>'form-label')) }}<x-required></x-required>
+                {{Form::text('name',null,array('class'=>'form-control','required'=>'required' ,'placeholder'=>__('Full Name')))}}
             </div>
         </div>
         <div class="col-lg-4 col-md-4 col-sm-6">
-            <div class="form-group" id="input-wrapper">
+            <div class="form-group" >
              {{Form::label('contact',__('Contact'),['class'=>'form-label'])}}<x-required></x-required>
-              <span class="CountryCode" readonly>+230</span>
-                {{Form::number('contact',null,array('class'=>'form-control','required'=>'required' , 'maxlength'=>'9', 'minlength'=>'9', 'placeholder'=>__('Contact data')))}} 
-                
-                <!-- <x-mobile label="{{__('Contact')}}" name="contact" value="{{old('contact')}}" maxlength="9" required placeholder="Contact"></x-mobile> -->
-            </div>
+             <div class="input-group">
+                        <span class="input-group-text">+230</span>
+                         <input type="number" aria-label="contact" value="" maxlength="15"  minlength="9" name="contact" id="contact" placeholder="Contact" class="form-control">
+                    </div>
+             </div>
         </div>
         <div class="col-lg-4 col-md-4 col-sm-6">
             <div class="form-group">
                 {{Form::label('email',__('Email'),['class'=>'form-label'])}}<x-required></x-required>
-                {{Form::email('email',null,array('class'=>'form-control' , 'placeholder'=>__('email'),'required'=>'required'))}}
+                {{Form::email('email',null,array('class'=>'form-control' , 'placeholder'=>__('Email'),'required'=>'required'))}}
 
             </div>
         </div>
@@ -69,7 +30,7 @@
         <div class="col-lg-4 col-md-4 col-sm-6">
             <div class="form-group">
                 {{Form::label('tax_number',__('Vat Registration Number'),['class'=>'form-label'])}}<x-required></x-required>
-                {{Form::number('tax_number',null,array('class'=>'form-control' ,'required' => 'required','maxlength'=>'8', 'minlength'=>'8', 'placeholder' => __('Tax Number')))}}
+                {{Form::number('tax_number',null,array('class'=>'form-control' ,'required' => 'required','maxlength'=>'8', 'minlength'=>'8', 'placeholder' => __('Vat Registration Number')))}}
             </div>
         </div>
         <div class="col-md-4">
@@ -269,17 +230,20 @@
                 errormessage="Please fill the valid data in valid format. \n";
                 $('#'+value).addClass("error");
             }
-
             if(errormessage!=""){
                 $('#'+value).next('.error-message').remove();
                 $errorSpan = $('<span>').addClass('error-message').text(errormessage);
                 $('#'+value).addClass("error");
-                $('#'+value).after($errorSpan);
                
+                $('#'+value).after($errorSpan);
+                if(value=="contact" ){
+                    $('.error-message').addClass('width100');
+                }
                 submitData=false;
             }else{
                 // $errorSpan = $('<span>').removeClass('error-message').text();
                 $('#'+value).removeClass("error");
+               
                 $('#'+value).next('.error-message').remove();
                 submitData=true;
             }

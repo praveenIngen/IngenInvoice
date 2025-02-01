@@ -17,15 +17,92 @@
             show_toastr('success', 'Url copied to clipboard', 'success');
         }
         
-        
- 
+       
+        (function () {
+            var chartBarOptions = {
+                series: [
+                    {
+                        name: '{{ __("Invoice") }}',
+                        data:  {!! json_encode($invoiceTotal) !!},
+                        left:200,
+                    },
+                ],
+
+                chart: {
+                    height: 300,
+                    type: 'bar',
+                    // type: 'line',
+
+                    dropShadow: {
+                        enabled: true,
+                        color: '#000',
+                        top: 18,
+                        left: 7,
+                        blur: 10,
+                        opacity: 0.2
+                    },
+                    toolbar: {
+                        show: false
+                    }
+                },
+                dataLabels: {
+                    enabled: false
+                },
+                stroke: {
+                    width: 2,
+                    curve: 'smooth'
+                },
+                title: {
+                    text: 'Invoice Summary ',
+                    align: 'left'
+                },
+                xaxis: {
+                    categories: {!! json_encode($monthList) !!},
+                    title: {
+                        text: '{{ __("Months") }}'
+                    }
+                },
+                colors: ['#145388', '#145388'],
+
+
+                grid: {
+                    strokeDashArray: 4,
+                },
+                legend: {
+                    show: false,
+                },
+                // markers: {
+                //     size: 4,
+                //     colors: ['#ffa21d', '#FF3A6E'],
+                //     opacity: 0.9,
+                //     strokeWidth: 2,
+                //     hover: {
+                //         size: 7,
+                //     }
+                // },
+                noData: {
+                    text: "No record exist",
+                    align: "center",
+                    verticalAlign: "middle",
+                },
+                yaxis: {
+                    title: {
+                        text: 'Amounts'
+                    },
+                }
+
+            };
+            var arChart = new ApexCharts(document.querySelector("#chart-sales"), chartBarOptions);
+            arChart.render();
+        })();
+
     </script>
 @endpush
 
 
 @section('breadcrumb')
     <li class="breadcrumb-item"><a href="{{route('dashboard')}}">{{__('Dashboard')}}</a></li>
-    <li class="breadcrumb-item">{{__('MoInvoice')}}</li>
+    <li class="breadcrumb-item">{{__("Invoice")}}</li>
 @endsection
 
 @section('action-btn')
@@ -40,7 +117,7 @@
 
         @can('create invoice')
             <a href="{{ route('invoice.create', 0) }}" class="btn btn-sm btn-primary" data-bs-toggle="tooltip" title="{{__('Create')}}">
-                <i class="ti ti-plus"></i>
+                <i class="ti ti-plus"></i> Create Invoice
             </a>
         @endcan
     </div>
@@ -49,6 +126,17 @@
 
 
 @section('content')
+<div class="row">
+        <div class="col-md-12">
+        <div class="card">
+        <div class="col-sm-12">
+            <div class="scrollbar-inner">
+                <div id="chart-sales" data-color="primary" data-type="bar" data-height="300" ></div>
+            </div>
+        </div>
+        </div>
+    </div>
+    </div>
     <div class="row">
         <div class="col-sm-12">
             <div class="mt-2 " id="multiCollapseExample1">
@@ -59,7 +147,7 @@
                             <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12 col-12 mr-2">
                                 <div class="btn-box">
                                     {{ Form::label('issue_date', __('Issue Date'),['class'=>'form-label'])}}
-                                    {{ Form::date('issue_date', isset($_GET['issue_date'])?$_GET['issue_date']:'', array('class' => 'form-control month-btn','id'=>'pc-daterangepicker-1')) }}
+                                    {{ Form::date('issue_date', isset($_GET['issue_date'])? $_GET['issue_date']:'', array('class' => 'form-control month-btn','id'=>'pc-daterangepicker-1')) }}
                                 </div>
                             </div>
                             <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12 col-12 mr-2">
@@ -111,7 +199,7 @@
                                 <th>{{ __('Due Amount') }}</th>
                                 <th>{{ __('Status') }}</th>
                                 @if (Gate::check('edit invoice') || Gate::check('delete invoice') || Gate::check('show invoice'))
-                                    <th>{{ __('Action') }}</th>
+                                    <th class="actionTab">{{ __('Action') }}</th>
                                 @endif
                                 {{-- <th>
                                 <td class="barcode">

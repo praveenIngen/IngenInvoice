@@ -1,33 +1,40 @@
-{{Form::model($vender,array('route' => array('vender.update', $vender->id), 'method' => 'PUT', 'class'=>'needs-validation', 'novalidate')) }}
+{{Form::model($vender,array('route' => array('vender.update', $vender->id), 'method' => 'PUT', 'class'=>'needs-validation')) }}
 <div class="modal-body">
 
     <h6 class="sub-title">{{__('Basic Info')}}</h6>
     <div class="row">
-        <div class="col-lg-6 col-md-6 col-sm-6">
+        <div class="col-lg-4 col-md-4 col-sm-4">
             <div class="form-group">
                 {{Form::label('name',__('Name'),array('class'=>'form-label')) }}<x-required></x-required>
                 {{Form::text('name',null,array('class'=>'form-control','required'=>'required'))}}
             </div>
         </div>
-        <div class="col-lg-6 col-md-6 col-sm-6">
+        <div class="col-lg-4 col-md-4 col-sm-4">
             <div class="form-group">
-                {{-- {{Form::label('contact',__('Contact'),['class'=>'form-label'])}}<x-required></x-required> --}}
-                {{-- {{Form::number('contact',null,array('class'=>'form-control','required'=>'required'))}} --}}
-                <x-mobile label="{{__('Contact')}}" name="contact" value="{{$vender->contact}}" required placeholder="Enter Contact"></x-mobile>
-
+              {{Form::label('contact',__('Contact'),['class'=>'form-label'])}}<x-required></x-required>
+                <div class="input-group">
+                    <span class="input-group-text">+230</span>
+                    <input type="number" aria-label="contact" value="{{$vender->contact}}" maxlength="15"  minlength="9" name="contact" id="contact" placeholder="Contact" class="form-control">
+                </div>
             </div>
         </div>
         <div class="col-lg-4 col-md-4 col-sm-6">
             <div class="form-group">
-                {{Form::label('tax_number',__('Tax Number'),['class'=>'form-label'])}}
-                {{Form::text('tax_number',null,array('class'=>'form-control'))}}
+                {{Form::label('email',__('Email'),['class'=>'form-label'])}}<x-required></x-required>
+                {{Form::email('email',null,array('class'=>'form-control','required'=>'required' , 'placeholder' => __('Enter email')))}}
+            </div>
+        </div>
+        <div class="col-lg-4 col-md-4 col-sm-6">
+            <div class="form-group">
+                {{Form::label('tax_number',__('Vat Registration Number'),['class'=>'form-label'])}}
+                {{Form::text('tax_number',null,array('class'=>'form-control' , 'placeholder' => __('Enter Vat Registration Number')))}}
 
             </div>
         </div>
-        <div class="col-md-6">
+        <div class="col-md-4">
                 <div class="form-group">
                     {{ Form::label('trade_name', __('Trade Name'), ['class' => 'form-label']) }}
-                    {{ Form::text('trade_name', $sellerDetail->trade_name, ['class' => 'form-control', 'placeholder' => __('Enter Trade Name')]) }}
+                    {{ Form::text('trade_name',null, ['class' => 'form-control', 'placeholder' => __('Enter Trade Name')]) }}
                     @error('trade_name')
                         <small class="invalid-name" role="alert">
                             <strong class="text-danger">{{ $message }}</strong>
@@ -35,10 +42,10 @@
                     @enderror
                 </div>
             </div>
-            <div class="col-md-6">
+            <div class="col-md-4">
                 <div class="form-group">
                     {{ Form::label('business_registration_number', __('Business Registration Number'), ['class' => 'form-label']) }}<x-required></x-required>
-                    {{ Form::text('business_registration_number', $sellerDetail->business_registration_number, ['class' => 'form-control', 'placeholder' => __('Enter Company Name'), 'required' => 'required']) }}
+                    {{ Form::text('business_registration_number', null, ['class' => 'form-control', 'placeholder' => __('Enter Company Name'), 'required' => 'required']) }}
                     @error('business_registration_number')
                         <small class="invalid-name" role="alert">
                             <strong class="text-danger">{{ $message }}</strong>
@@ -46,28 +53,7 @@
                     @enderror
                 </div>
             </div>
-            <div class="col-md-6">
-                <div class="form-group">
-                    {{ Form::label('ebs_counter_number', __('EBS Counter Number'), ['class' => 'form-label']) }}
-                    {{ Form::text('ebs_counter_number', $sellerDetail->ebs_counter_number, ['class' => 'form-control', 'placeholder' => __('Enter EBS Counter Number')]) }}
-                    @error('ebs_counter_number')
-                        <small class="invalid-email" role="alert">
-                            <strong class="text-danger">{{ $message }}</strong>
-                        </small>
-                    @enderror
-                </div>
-            </div>
-            <div class="col-md-6">
-                <div class="form-group">
-                    {{ Form::label('cashierid', __('Cashier ID'), ['class' => 'form-label']) }}
-                    {{ Form::text('cashierid', $sellerDetail->cashierid, ['class' => 'form-control', 'placeholder' => __('Enter Cashier ID')]) }}
-                    @error('cashierid')
-                        <small class="invalid-name" role="alert">
-                            <strong class="text-danger">{{ $message }}</strong>
-                        </small>
-                    @enderror
-                </div>
-            </div>
+            
         @if(!$customFields->isEmpty())
             <div class="col-lg-4 col-md-4 col-sm-6">
                 <div class="tab-pane fade show" id="tab-2" role="tabpanel">
@@ -87,7 +73,10 @@
         <div class="col-lg-6 col-md-6 col-sm-6">
             <div class="form-group">
                 {{Form::label('billing_phone',__('Phone'),array('class'=>'form-label')) }}
-                {{Form::text('billing_phone',null,array('class'=>'form-control'))}}
+                <div class="input-group">
+                    <span class="input-group-text">+230</span>
+                    <input type="number" aria-label="billing_phone" value="{{$vender->billing_phone}}" maxlength="15"  minlength="9" name="billing_phone" id="billing_phone" placeholder="billing_phone" class="form-control">
+                </div>
             </div>
         </div>
         <div class="col-md-12">
@@ -144,8 +133,10 @@
             <div class="col-lg-6 col-md-6 col-sm-6">
                 <div class="form-group">
                     {{Form::label('shipping_phone',__('Phone'),array('class'=>'form-label')) }}
-                    {{Form::text('shipping_phone',null,array('class'=>'form-control'))}}
-
+                    <div class="input-group">
+                    <span class="input-group-text">+230</span>
+                    <input type="number" aria-label="shipping_phone" value="{{$vender->shipping_phone}}" maxlength="15"  minlength="9" name="shipping_phone" id="shipping_phone" placeholder="shipping_phone" class="form-control">
+                </div>
                 </div>
             </div>
             <div class="col-md-12">

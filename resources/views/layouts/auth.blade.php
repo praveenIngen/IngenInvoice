@@ -49,7 +49,7 @@
 <head>
     <title>
         {{ Utility::getValByName('title_text') ? Utility::getValByName('title_text') : config('app.name', 'ERPGO') }}
-        - @yield('page-title')</title>
+        </title>
 
     <meta name="title" content="{{ $metatitle }}">
     <meta name="description" content="{{ $metsdesc }}">
@@ -82,6 +82,7 @@
         type="image/x-icon" />
 
     <!-- font css -->
+    <link rel="stylesheet" href="{{ asset('assets/fonts/tabler-icons.min.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/fonts/feather.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/fonts/fontawesome.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/fonts/material.css') }}">
@@ -124,23 +125,9 @@
     <link rel="stylesheet" href="{{ asset('css/custom.css') }}">
 
 </head>
-<style>
-    #pageloader{
-    background: url("{{ asset('assets/images/Spinner.gif') }}") no-repeat center center;
-    position: fixed;
-    top: 0;
-    left: 0;
-    height: 100%;
-    width: 100%;
-    z-index: 9999999;
-    background-color: #ffffff8c;
 
-}
-    </style>
 <body class="{{ $themeColor }}">
-<div id="pageloader" class="hidden Ploader" style="display: none">
-    Loading ...
-  </div>    
+    
     <div class="custom-login">
         <div class="login-bg-img">
             <img src="{{ isset($setting['color_flag']) && $setting['color_flag'] == 'false' ? asset('assets/images/auth/'.$color.'.svg') : asset('assets/images/auth/theme-3.svg') }}" class="login-bg-1">
@@ -189,15 +176,7 @@
             </main>
             <footer>
                 <div class="auth-footer">
-                    <div class="container">
-                        <div class="row">
-                            <div class="col-12">
-                                <span>&copy; {{ date('Y') }}
-                                    {{ App\Models\Utility::getValByName('footer_text') ? App\Models\Utility::getValByName('footer_text') : config('app.name', 'Storego Saas') }}
-                                </span>
-                            </div>
-                        </div>
-                    </div>
+                    
                 </div>
             </footer>
         </div>
@@ -210,6 +189,7 @@
     <!-- [ auth-signup ] end -->
 
     <!-- Required Js -->
+    <script src="{{ asset('assets/js/vendor-all.js') }}"></script>
     <script src="{{ asset('assets/js/plugins/bootstrap.min.js') }}"></script>
     <script src="{{ asset('assets/js/plugins/feather.min.js') }}"></script>
     <script src="{{ asset('js/jquery.min.js') }}"></script>

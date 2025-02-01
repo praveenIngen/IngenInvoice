@@ -58,14 +58,88 @@ class InvoiceController extends Controller
             if ($request->status != null) {
                 $query->where('status', '=', $request->status);
             }
-            $invoices = $query->get();
+            $invoices = $query->orderBy('id', 'DESC')->get();
+            $filter['customer'] = __('All');
+            $filter['status'] = __('All');
 
-            return view('invoice.index', compact('invoices', 'customer', 'status'));
+            $customer = Customer::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+            $customer->prepend('Select Customer', '');
+            $status = Invoice::$statues;
+
+            $invoicesMonth = Invoice::selectRaw('invoices.*,MONTH(issue_date) as month,YEAR(issue_date) as year');
+
+            // if ($request->status != '') {
+            //     $invoicesMonth->where('status', $request->status);
+
+            //     $filter['status'] = Invoice::$statues[$request->status];
+            // } else {
+            //     $invoicesMonth->where('status', '!=', 0);
+            // }
+
+            $invoicesMonth->where('created_by', '=', \Auth::user()->creatorId());
+
+            // if (!empty($request->start_month) && !empty($request->end_month)) {
+            //     $start = strtotime($request->start_month);
+            //     $end = strtotime($request->end_month);
+            // } else {
+                $start = strtotime(date('Y-01'));
+                $end = strtotime(date('Y-12'));
+            // }
+
+            $invoicesMonth->where('issue_date', '>=', date('Y-m-01', $start))->where('issue_date', '<=', date('Y-m-t', $end));
+
+            $filter['startDateRange'] = date('M-Y', $start);
+            $filter['endDateRange'] = date('M-Y', $end);
+
+            if (!empty($request->customer)) {
+                $invoicesMonth->where('customer_id', $request->customer);
+                $cust = Customer::find($request->customer);
+
+                $filter['customer'] = !empty($cust) ? $cust->name : '';
+            }
+
+            $invoicesMonth = $invoicesMonth->with(['customer', 'category'])->orderBy('id', 'DESC')->get();
+
+            $totalInvoice = 0;
+            $totalDueInvoice = 0;
+            $invoiceTotalArray = [];
+            foreach ($invoicesMonth as $invoiced) {
+                $totalInvoice += $invoiced->getTotal();
+                $totalDueInvoice += $invoiced->getDue();
+
+                $invoiceTotalArray[$invoiced->month][] = $invoiced->getTotal();
+            }
+            $totalPaidInvoice = $totalInvoice - $totalDueInvoice;
+// print_r($invoiceTotalArray);
+// die;
+            for ($i = 1; $i <= 12; $i++) {
+                $invoiceTotal[] = array_key_exists($i, $invoiceTotalArray) ? array_sum($invoiceTotalArray[$i]) : 0;
+            }
+
+            $monthList = $month = $this->yearMonth();
+            return view('invoice.index', compact('invoices', 'customer', 'status','invoiceTotal', 'monthList'));
         } else {
             return redirect()->back()->with('error', __('Permission Denied.'));
         }
     }
+    public function yearMonth()
+    {
 
+        $month[] = __('January');
+        $month[] = __('February');
+        $month[] = __('March');
+        $month[] = __('April');
+        $month[] = __('May');
+        $month[] = __('June');
+        $month[] = __('July');
+        $month[] = __('August');
+        $month[] = __('September');
+        $month[] = __('October');
+        $month[] = __('November');
+        $month[] = __('December');
+
+        return $month;
+    }
     public function create($customerId = 0)
     {
         if (\Auth::user()->can('create invoice')) {
@@ -75,9 +149,13 @@ class InvoiceController extends Controller
             $customers->prepend('Select Customer', '');
             $category = ProductServiceCategory::where('created_by', \Auth::user()->creatorId())->where('type', 'income')->get()->pluck('name', 'id');
             $category->prepend('Select Category', '');
-            $product_services = ProductService::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+            $product_services = ProductService::where('created_by', \Auth::user()->creatorId())->where('quantity','>', 0)->get()->pluck('name', 'id');
             $product_services->prepend('Please Select Item', '');
-
+            $url_pieces = explode( '?', $_SERVER['REQUEST_URI']);
+            if($url_pieces[1]>0){
+                $customerId=$url_pieces[1];
+            }
+    
             return view('invoice.create', compact('customers', 'invoice_number', 'product_services', 'category', 'customFields', 'customerId'));
         } else {
             return response()->json(['error' => __('Permission denied.')], 401);
@@ -189,7 +267,6 @@ class InvoiceController extends Controller
         //    print_r($invoice);
         //     die;
             //Product Stock Report
-         
             $type = 'invoice';
             $type_id = $invoice->invoice_id;
             StockReport::where('type', '=', 'invoice')->where('type_id', '=', $invoice->id)->delete();
@@ -269,7 +346,7 @@ class InvoiceController extends Controller
 
                     return redirect()->route('invoice.index')->with('error', $messages->first());
                 }
-                Utility::updateUserBalance('customer', $request->customer_id, $invoice->getTotal(), 'debit');
+                Utility::updateUserBalance('customer', $request->customer_id, $invoice->getTotal(), 'credit');
                 $customer = Customer::find($request->customer_id);
                 $invoice->customer_id = $request->customer_id;
                 $invoice->issue_date = $request->issue_date;
@@ -347,7 +424,7 @@ class InvoiceController extends Controller
 
                 }
            
-                    Utility::updateUserBalance('customer', $request->customer_id, $updatePrice, 'credit');
+          
 
                     TransactionLines::where('reference_id',$invoice->id)->where('reference','Invoice')->delete();
 
@@ -438,8 +515,8 @@ class InvoiceController extends Controller
                 $customFields = CustomField::where('created_by', '=', \Auth::user()->creatorId())->where('module', '=', 'invoice')->get();
 
                 $creditnote = CreditNote::where('invoice',$invoice->id)->first();
-
-                return view('invoice.view', compact('invoice', 'customer', 'iteams', 'invoicePayment', 'customFields', 'user', 'invoice_user', 'user_plan' , 'creditnote'));
+                $seller=SellerDetail::getSellerDataforInvoice(\Auth::user()->name,\Auth::user()->creatorId());
+                return view('invoice.view', compact('invoice', 'customer', 'seller','iteams', 'invoicePayment', 'customFields', 'user', 'invoice_user', 'user_plan' , 'creditnote'));
             } else {
                 return redirect()->back()->with('error', __('Permission denied.'));
             }
@@ -603,13 +680,12 @@ class InvoiceController extends Controller
                 $invoice->status = 1;
                 $invoice->save();
 
-                $customer = Customer::where('id', $invoice->customer_id)->first();
+                $customer = Customer::where('created_by', '=', \Auth::user()->creatorId())->where('id', $invoice->customer_id)->first();
                 $invoice->name = !empty($customer) ? $customer->name : '';
                 $invoice->invoice = \Auth::user()->invoiceNumberFormat($invoice->invoice_id);
 
                 $invoiceId = Crypt::encrypt($invoice->id);
                 $invoice->url = route('invoice.pdf', $invoiceId);
-
                 Utility::updateUserBalance('customer', $customer->id, $invoice->getTotal(), 'credit');
 
                 $invoice_products = InvoiceProduct::where('invoice_id', $invoice->id)->get();
@@ -959,7 +1035,7 @@ class InvoiceController extends Controller
 
         $invoiceId = Crypt::encrypt($invoice->id);
         $invoice->url = route('invoice.pdf', $invoiceId);
-
+        $seller=SellerDetail::getSellerDataforInvoice(\Auth::user()->name,\Auth::user()->creatorId());
         try
         {
             Mail::to($email)->send(new CustomerInvoiceSend($invoice));
@@ -1215,12 +1291,14 @@ class InvoiceController extends Controller
         $customFields = [];
         if (!empty(\Auth::user())) {
             $customFields = CustomField::where('created_by', '=', \Auth::user()->creatorId())->where('module', '=', 'invoice')->get();
+            $seller=SellerDetail::getSellerDataforInvoice(\Auth::user()->name,\Auth::user()->creatorId());
         }
 
         $logo = asset(Storage::url('uploads/logo/'));
         $company_logo = Utility::getValByName('company_logo_dark');
         $settings_data = \App\Models\Utility::settingsById($invoice->created_by);
         $invoice_logo = $settings_data['invoice_logo'];
+      
         if (isset($invoice_logo) && !empty($invoice_logo)) {
             $img = Utility::get_file('invoice_logo/') . $invoice_logo;
         } else {

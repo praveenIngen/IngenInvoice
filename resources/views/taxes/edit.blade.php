@@ -1,4 +1,4 @@
-{{ Form::model($tax, array('route' => array('taxes.update', $tax->id), 'method' => 'PUT', 'class'=>'needs-validation', 'novalidate')) }}
+{{ Form::model($tax, array('route' => array('taxes.update', $tax->id), 'method' => 'PUT', 'class'=>'needs-validation')) }}
 <div class="modal-body">
     <div class="row">
         <div class="form-group col-md-6">

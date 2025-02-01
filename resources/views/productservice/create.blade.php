@@ -16,6 +16,7 @@
             <div class="form-group">
                 {{ Form::label('sku', __('Product Code'),['class'=>'form-label']) }}<x-required></x-required>
                 {{ Form::text('sku', '', array('class' => 'form-control','required'=>'required' , 'placeholder'=>__('Sku Number'))) }}
+                <span>SKU code should be unique for every product</span>
             </div>
         </div>
         <div class="col-md-6">
@@ -182,20 +183,27 @@
             }else if((maxAttr!=undefined && minAttr!=undefined) && (valueData=="" || (valueData!="" && (valueData.length>maxAttr || valueData.length<minAttr)))){
                  errormessage="Please fill the valid data  with minimum "+minAttr+" digit "+type+" and maximum "+maxAttr+ " digit  "+type+"\n";
             }
+           
             if(errormessage!=""){
                 $('#'+value).next('.error-message').remove();
                 $errorSpan = $('<span>').addClass('error-message').text(errormessage);
                 $('#'+value).addClass("error");
                 $('#'+value).after($errorSpan);
-               
                 submitData=false;
+             
             }else{
                 // $errorSpan = $('<span>').removeClass('error-message').text();
                 $('#'+value).removeClass("error");
                 $('#'+value).next('.error-message').remove();
                 submitData=true;
             }
+        
         });
+        if( $('input[name="type"]:checked').val() =="SERVICES"){
+                    $('#quantity').removeClass("error");
+                    $('#quantity').next('.error-message').remove();
+                    submitData=true;
+                }
        if(submitData===true &&  ($('#'+variableName[0]).hasClass("error")==false) && 
            ($('#'+variableName[1]).hasClass("error")==false) && ($('#'+variableName[2]).hasClass("error")==false) && 
            ($('#'+variableName[3]).hasClass("error")==false) && ($('#'+variableName[4]).hasClass("error")==false) &&

@@ -27,6 +27,7 @@ use App\Http\Controllers\BudgetController;
 use App\Http\Controllers\BugStatusController;
 use App\Http\Controllers\CashfreeController;
 use App\Http\Controllers\ChartOfAccountController;
+use App\Http\Controllers\ChartOfAccountTypeController;
 use App\Http\Controllers\CinetPayController;
 use App\Http\Controllers\ClientController;
 use App\Http\Controllers\CoingatePaymentController;
@@ -458,8 +459,10 @@ Route::group(['middleware' => ['verified']], function () {
         ],
         function () {
             Route::resource('vender', VenderController::class);
+
         }
     );
+
 
     Route::group(
         [
@@ -701,9 +704,25 @@ Route::group(['middleware' => ['verified']], function () {
         ],
         function () {
             Route::resource('chart-of-account', ChartOfAccountController::class);
+
         }
     );
-
+    Route::group(
+        [
+            'middleware' => [
+                'auth',
+                'XSS',
+                'revalidate',
+            ],
+        ],
+        function () {
+            Route::resource('chart-of-account-type', ChartOfAccountTypeController::class);
+            Route::get('chart-of-account-subtype', [ChartOfAccountTypeController::class, 'createSubType'])->name('charofAccount.createSubType');
+            Route::get('chart-of-account-subtypeEdit/{id}', [ChartOfAccountTypeController::class, 'subTypeEdit'])->name('charofAccount.subTypeEdit');
+            Route::put('chart-of-account-subTypeUpdate', [ChartOfAccountTypeController::class, 'subTypeUpdate'])->name('charofAccount.subTypeUpdate');
+        }
+    );
+ 
     Route::group(
         [
             'middleware' => [

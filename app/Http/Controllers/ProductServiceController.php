@@ -38,9 +38,9 @@ class ProductServiceController extends Controller
 
             if (!empty($request->category)) {
 
-                $productServices = ProductService::where('created_by', '=', \Auth::user()->creatorId())->where('category_id', $request->category)->with(['category', 'unit'])->get();
+                $productServices = ProductService::where('created_by', '=', \Auth::user()->creatorId())->where('category_id', $request->category)->with(['category', 'unit'])->orderBy('id', 'DESC')->get();
             } else {
-                $productServices = ProductService::where('created_by', '=', \Auth::user()->creatorId())->with(['category', 'unit'])->get();
+                $productServices = ProductService::where('created_by', '=', \Auth::user()->creatorId())->with(['category', 'unit'])->orderBy('id', 'DESC')->get();
             }
 
             return view('productservice.index', compact('productServices', 'category'));
@@ -105,7 +105,7 @@ class ProductServiceController extends Controller
                 'name' => 'required',
                 'sku' => [
                     'required', Rule::unique('product_services')->where(function ($query) {
-                        return $query->where('created_by', \Auth::user()->id);
+                        return $query->where('sku', $_POST['sku']);
                     })
                 ],
                 'sale_price' => 'required|numeric',
@@ -375,25 +375,29 @@ class ProductServiceController extends Controller
 
                 $taxData = implode(',', $taxesData);
                 //            dd($taxData);
-
-                if (!empty($productBySku)) {
-                    $productService = $productBySku;
+                $productBySku=ProductService::where('sku','=',$items[1])->get();
+               
+                if (isset($productBySku[0]) && !empty($productBySku[0])) {
+                    $productService = $productBySku[0];
                 } else {
                     $productService = new ProductService();
                 }
-
+                // print_r($productService);
+                // die;
                 $productService->name           = $items[0];
                 $productService->sku            = $items[1];
-                $productService->sale_price     = $items[2];
-                $productService->purchase_price = $items[3];
-                $productService->quantity       = $items[4];
-                $productService->tax_id         = $items[5];
-                $productService->category_id    = $items[6];
-                $productService->unit_id        = $items[7];
-                $productService->type           = $items[8];
-                $productService->description    = $items[9];
+                $productService->tax_category            = $items[2];
+                $productService->sale_price     = $items[3];
+                $productService->purchase_price = $items[4];
+                $productService->quantity       = $items[5];
+                $productService->tax_id         = $taxData;
+                $productService->category_id    = $items[7];
+                $productService->unit_id        = $items[8];
+                $productService->type           = $items[9];
+                $productService->description    = $items[10];
                 $productService->created_by     = \Auth::user()->creatorId();
-
+            //  print_r($productService);
+            //  die;
                 if (empty($productService)) {
                     $errorArray[] = $productService;
                 } else {

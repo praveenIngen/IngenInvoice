@@ -6,6 +6,7 @@
             {{Form::date('date',null,array('class'=>'form-control','required'=>'required'))}}
         </div>
         <div class="form-group col-md-6">
+          
             {{ Form::label('amount', __('Credit Amount'),['class'=>'form-label']) }}<x-required></x-required>
             {{ Form::number('amount', !empty($invoiceDue)?$invoiceDue->getDue():0, array('class' => 'form-control','required'=>'required','step'=>'0.01' , 'placeholder'=>__('Enter Amount'))) }}
 
@@ -58,6 +59,10 @@
                 errormessage="Please fill the valid data which must be "+ minAttr+" digit "+type+" \n";
             }else if((maxAttr!=undefined && minAttr!=undefined) && (valueData=="" || (valueData!="" && (valueData.length>maxAttr || valueData.length<minAttr)))){
                  errormessage="Please fill the valid data  with minimum "+minAttr+" digit "+type+" and maximum "+maxAttr+ " digit  "+type+"\n";
+            }
+            var CurrentDate = new Date();
+            if(value=="date" && valueData < CurrentDate){
+               errormessage="Please fill the date greater than or equal to current date";
             }
             if(errormessage!=""){
                 $('#'+value).next('.error-message').remove();

@@ -11,14 +11,14 @@
 @section('action-btn')
     <div class="float-end">
         <a href="#" data-size="md"  data-bs-toggle="tooltip" title="{{__('Import')}}" data-url="{{ route('productservice.file.import') }}" data-ajax-popup="true" data-title="{{__('Import product CSV file')}}" class="btn btn-sm btn-primary">
-            <i class="ti ti-file-import"></i>
+            <i class="ti ti-file-import"></i>Import
         </a>
         <a href="{{route('productservice.export')}}" data-bs-toggle="tooltip" title="{{__('Export')}}" class="btn btn-sm btn-primary">
-            <i class="ti ti-file-export"></i>
+            <i class="ti ti-file-export"></i>Export
         </a>
 
         <a href="#" data-size="lg" data-url="{{ route('productservice.create') }}" data-ajax-popup="true" data-bs-toggle="tooltip" data-title="{{__('Create New Product & Service')}}" class="btn btn-sm btn-primary">
-            <i class="ti ti-plus"></i>
+            <i class="ti ti-plus"></i>Add Item
         </a>
 
     </div>
@@ -74,7 +74,7 @@
                                 <th>{{__('Unit')}}</th>
                                 <th>{{__('Quantity')}}</th>
                                 <th>{{__('Type')}}</th>
-                                <th>{{__('Action')}}</th>
+                                <th class="actionTab">{{__('Action')}}</th>
                             </tr>
                             </thead>
                             <tbody>
@@ -118,12 +118,7 @@
 
                                     @if(Gate::check('edit product & service') || Gate::check('delete product & service'))
                                         <td class="Action">
-                                            <div class="action-btn bg-warning ms-2">
-                                                <a href="#" class="mx-3 btn btn-sm align-items-center" data-url="{{ route('productservice.detail',$productService->id) }}"
-                                                   data-ajax-popup="true" data-bs-toggle="tooltip" title="{{__('Warehouse Details')}}" data-title="{{__('Warehouse Details')}}">
-                                                    <i class="ti ti-eye text-white"></i>
-                                                </a>
-                                            </div>
+                                          
 
                                             @can('edit product & service')
                                                 <div class="action-btn bg-info ms-2">

@@ -9,30 +9,13 @@
 @push('script-page')
     <script>
         (function () {
-            var chartBarOptions = {
-                series: [
-                    {
-                        name: '{{ __("Income") }}',
-                        data:  {!! json_encode ($chartData['data']) !!},
-
-                    },
-                ],
-
+            var options = {
                 chart: {
-                    height: 300,
-                    type: 'area',
-                    // type: 'line',
-                    dropShadow: {
-                        enabled: true,
-                        color: '#000',
-                        top: 18,
-                        left: 7,
-                        blur: 10,
-                        opacity: 0.2
-                    },
+                    height: 400,
+                    type: 'bar',
                     toolbar: {
-                        show: false
-                    }
+                        show: false,
+                    },
                 },
                 dataLabels: {
                     enabled: false
@@ -41,43 +24,57 @@
                     width: 2,
                     curve: 'smooth'
                 },
-                title: {
-                    text: '',
-                    align: 'left'
-                },
+                series: [{
+                    name: "{{__('Invoice total')}}",
+                    data: {!! json_encode($monthlyInvoice['invoiceTotal']) !!}
+                }, {
+                    name: "{{__('invoice paid')}}",
+                    data: {!! json_encode($monthlyInvoice['invoicePaid']) !!}
+                }, {
+                    name: "{{__('invoice due')}}",
+                    data: {!! json_encode($monthlyInvoice['invoiceDue']) !!}
+                }],
                 xaxis: {
-                    categories: {!! json_encode($chartData['label']) !!},
                     title: {
                         text: '{{ __("Months") }}'
-                    }
+                    },
+                    categories: {!! json_encode($monthList) !!},
                 },
-                colors: ['#6fd944', '#6fd944'],
-
+                colors: ['#3ec9d6', '#2E7B7F','#FF3A6E'],
+                fill: {
+                    type: 'solid',
+                },
                 grid: {
                     strokeDashArray: 4,
                 },
                 legend: {
-                    show: false,
+                    show: true,
+                    position: 'top',
+                    horizontalAlign: 'right',
                 },
                 // markers: {
                 //     size: 4,
-                //     colors: ['#ffa21d', '#FF3A6E'],
+                //     colors:  ['#3ec9d6', '#FF3A6E',],
                 //     opacity: 0.9,
                 //     strokeWidth: 2,
                 //     hover: {
                 //         size: 7,
                 //     }
-                // },
+                // }
+                noData: {
+                    text: "No record exist",
+                    align: "center",
+                    verticalAlign: "middle",
+                },
                 yaxis: {
                     title: {
-                        text: '{{ __("Income") }}'
-                    },
+                        text: '{{ __("Amount") }}'
+                    }
 
                 }
-
             };
-            var arChart = new ApexCharts(document.querySelector("#chart-sales"), chartBarOptions);
-            arChart.render();
+            var chart = new ApexCharts(document.querySelector("#incExpBarChart"), options);
+            chart.render();
         })();
     </script>
 @endpush
@@ -91,17 +88,17 @@ $admin_payment_setting = Utility::getAdminPaymentSetting();
             <div class="card">
                 <div class="card-body p-3">
                     <div class="d-flex align-items-center justify-content-between">
-                        <div class="d-flex align-items-center mb-3 mt-3">
+                        <div class="d-flex align-items-center ">
                             <div class="theme-avtar bg-primary">
                                 <i class="ti ti-users"></i>
                             </div>
-                            <div class="ms-3 mb-3 mt-3">
+                            <div class="ms-3 ">
                                 <h6 class="ml-4">{{__('Total Companies')}}</h6>
                             </div>
                         </div>
 
-                        <div class="number-icon ms-3 mb-3 mt-3"><h3>{{$user->total_user}}</h3></div>
-                            <div class="ms-3 mb-3 mt-3">
+                        <div class="number-icon ms-3 "><h6>{{$user->total_user}}</h6></div>
+                            <div class="ms-3 ">
                                 <h6>{{__('Paid Users')}} : {{$user['total_paid_user']}}</h6>
                         </div>
                     </div>
@@ -113,17 +110,17 @@ $admin_payment_setting = Utility::getAdminPaymentSetting();
             <div class="card">
                 <div class="card-body p-3">
                     <div class="d-flex align-items-center justify-content-between">
-                        <div class="d-flex align-items-center mb-3 mt-3">
+                        <div class="d-flex align-items-center ">
                             <div class="theme-avtar bg-warning">
                                 <i class="ti ti-shopping-cart"></i>
                             </div>
-                            <div class="ms-3 mb-3 mt-3">
+                            <div class="ms-3 ">
                                 <h6 class="ml-4">{{__('Total Orders')}}</h6>
                             </div>
                         </div>
 
-                        <div class="number-icon ms-3 mb-3 mt-3"><h3>{{$user->total_orders}}</h3></div>
-                            <div class="ms-3 mb-3 mt-3">
+                        <div class="number-icon ms-3 "><h6>{{$user->total_orders}}</h6></div>
+                            <div class="ms-3 ">
                                 <h6>{{__('Total Order Amount')}} : <span class="text-dark">{{isset($admin_payment_setting['currency_symbol']) ? $admin_payment_setting['currency_symbol'] : '$'}}{{$user['total_orders_price']}}</span></h6>
                         </div>
                     </div>
@@ -135,17 +132,17 @@ $admin_payment_setting = Utility::getAdminPaymentSetting();
             <div class="card">
                 <div class="card-body p-3">
                     <div class="d-flex align-items-center justify-content-between">
-                        <div class="d-flex align-items-center mb-3 mt-3">
+                        <div class="d-flex align-items-center ">
                             <div class="theme-avtar bg-info">
                                 <i class="ti ti-trophy"></i>
                             </div>
-                            <div class="ms-3 mb-3 mt-3">
+                            <div class="ms-3 ">
                                 <h6 class="ml-4">{{__('Total Plans')}}</h6>
                             </div>
                         </div>
 
-                        <div class="number-icon ms-3 mb-3 mt-3"><h3>{{$user->total_plan}}</h3></div>
-                            <div class="ms-3 mb-3 mt-3">
+                        <div class="number-icon ms-3 "><h6>{{$user->total_plan}}</h6></div>
+                            <div class="ms-3 ">
                                 <h6>{{__('Most Purchase Plan')}} : <span class="text-dark">{{$user['most_purchese_plan']}}</span></h6>
                         </div>
                     </div>
@@ -154,10 +151,10 @@ $admin_payment_setting = Utility::getAdminPaymentSetting();
         </div>
 
         <div class="col-xxl-12">
-            <h4 class="h4 font-weight-400">{{__('Recent Order')}}</h4>
+            <h4 class="h4 font-weight-400">{{__('Invoice Summary')}}</h4>
             <div class="card">
                 <div class="chart">
-                    <div id="chart-sales" data-color="primary" data-height="280" class="p-3"></div>
+                    <div id="incExpBarChart" data-color="primary" data-height="280" class="p-3"></div>
                 </div>
             </div>
         </div>

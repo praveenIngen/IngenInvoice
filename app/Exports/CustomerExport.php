@@ -25,6 +25,8 @@ class CustomerExport implements FromCollection, WithHeadings
             $data[$k]["balance"]     = \Auth::user()->priceFormat($customer->balance);
             //            $data[$k]["avatar"]      = !empty($customer->avatar) ? asset(\Storage::url('uploads/avatar')) . '/' . $customer->avatar : '-';
         }
+//         print_r($data);
+// die;
         return $data;
     }
 
@@ -34,6 +36,10 @@ class CustomerExport implements FromCollection, WithHeadings
             "Customer No",
             "Name",
             "Email",
+            "Business Registration Number",
+            "NIC Number",
+            "Transaction Nature",
+            "Byuer Type",
             "Contact",
             "Billing Name",
             "Billing Country",

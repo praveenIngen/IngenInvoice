@@ -1,4 +1,4 @@
-{{ Form::model($unit, array('route' => array('product-unit.update', $unit->id), 'method' => 'PUT', 'class'=>'needs-validation', 'novalidate')) }}
+{{ Form::model($unit, array('route' => array('product-unit.update', $unit->id), 'method' => 'PUT', 'class'=>'needs-validation')) }}
 <div class="modal-body">
     <div class="row">
         <div class="form-group col-md-12">

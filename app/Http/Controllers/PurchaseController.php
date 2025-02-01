@@ -65,7 +65,7 @@ class PurchaseController extends Controller
             $warehouse->prepend('Select Warehouse', '');
 
             $product_services = ProductService::where('created_by', \Auth::user()->creatorId())->where('type','!=', 'service')->get()->pluck('name', 'id');
-            $product_services->prepend('--', '');
+            $product_services->prepend('Select Item', '');
 
             return view('purchase.create', compact('venders', 'purchase_number', 'product_services', 'category', 'customFields','vendorId','warehouse'));
         }

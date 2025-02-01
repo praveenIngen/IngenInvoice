@@ -43,25 +43,25 @@ class PosController extends Controller
                 'pay' => 'show',
             ];
 
-            if ($id != 0) {
+            // if ($id != 0) {
 
-                $quotation = Quotation::find($id);
+            //     $quotation = Quotation::find($id);
 
-                $customerId = $quotation->customer_id;
-                $customerId = Customer::find($customerId);
-                $customer = $customerId->name;
+            //     $customerId = $quotation->customer_id;
+            //     $customerId = Customer::find($customerId);
+            //     $customer = $customerId->name;
 
-                $warehouseId = $quotation->warehouse_id;
+            //     $warehouseId = $quotation->warehouse_id;
 
-                $quotationProduct = QuotationProduct::where('quotation_id', $id)->get();
+            //     $quotationProduct = QuotationProduct::where('quotation_id', $id)->get();
 
-                foreach ($quotationProduct as $value) {
-                    $products = Quotation::quotationProduct($value);
-                }
-            } else {
-                $customer = '';
-                $warehouseId = '';
-            }
+            //     foreach ($quotationProduct as $value) {
+            //         $products = Quotation::quotationProduct($value);
+            //     }
+            // } else {
+            //     $customer = '';
+            //     $warehouseId = '';
+            // }
             return view('pos.index', compact('customers', 'warehouses', 'details', 'customer', 'warehouseId', 'id'));
         } else {
             return redirect()->back()->with('error', __('Permission denied.'));
@@ -87,7 +87,7 @@ class PosController extends Controller
             $settings = Utility::settings();
 
             $customer = Customer::where('name', '=', $request->vc_name)->where('created_by', $user->creatorId())->first();
-            $warehouse = warehouse::where('id', '=', $request->warehouse_name)->where('created_by', $user->creatorId())->first();
+            $warehouse = warehouse::where('id', '=', $request->warehouse_id)->where('created_by', $user->creatorId())->first();
 
 
             $details = [
@@ -98,7 +98,8 @@ class PosController extends Controller
                 'date' => date('Y-m-d'),
                 'pay' => 'show',
             ];
-
+print_r($request);
+die;
             if (!empty($details['customer'])) {
                 $warehousedetails = '<h7 class="text-dark">' . ucfirst($details['warehouse']['name']) . '</p></h7>';
                 $details['customer']['billing_state'] = $details['customer']['billing_state'] != '' ? ", " . $details['customer']['billing_state'] : '';
@@ -174,12 +175,12 @@ class PosController extends Controller
 
         if (Auth::user()->can('manage pos')) {
 
-            if($request->quotation_id != 0)
-            {
-                $quotation = Quotation::where('id', $request->quotation_id)->first();
-                $quotation->is_converted = 1;
-                $quotation->save();
-            }
+            // if($request->quotation_id != 0)
+            // {
+            //     $quotation = Quotation::where('id', $request->quotation_id)->first();
+            //     $quotation->is_converted = 1;
+            //     $quotation->save();
+            // }
 
 
             $user_id = Auth::user()->creatorId();
@@ -187,7 +188,8 @@ class PosController extends Controller
             $warehouse_id = warehouse::warehouse_id($request->warehouse_name);
             $pos_id = $this->invoicePosNumber();
             $sales = session()->get('pos');
-
+print_r($sales);
+die;
             if (isset($sales) && !empty($sales) && count($sales) > 0) {
                 $result = DB::table('pos')->where('pos_id', $pos_id)->where('created_by', $user_id)->get();
                 if (count($result) > 0) {
@@ -206,11 +208,11 @@ class PosController extends Controller
                     $pos->created_by = $user_id;
                     $pos->save();
 
-            if($request->quotation_id != 0)
-{
-                    $quotation->converted_pos_id = $pos->id;
-                    $quotation->save();
-                }
+//             if($request->quotation_id != 0)
+// {
+//                     $quotation->converted_pos_id = $pos->id;
+//                     $quotation->save();
+//                 }
                     foreach ($sales as $key => $value) {
                         $product_id = $value['id'];
 

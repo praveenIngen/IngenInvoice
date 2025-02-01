@@ -35,7 +35,7 @@
 <meta name="csrf-token" id="csrf-token" content="{{ csrf_token() }}">
 
 <head>
-    <title>{{ $setting['title_text'] ? $setting['title_text'] : config('app.name', 'ERPGO') }} - @yield('page-title')
+    <title>{{ $setting['title_text'] ? $setting['title_text'] : config('app.name', 'ERPGO') }}
     </title>
 
     <meta name="title" content="{{ $metatitle }}">
@@ -75,6 +75,7 @@
     <link rel="stylesheet" href="{{ asset('assets/css/plugins/main.css') }}">
 
     <link rel="stylesheet" href="{{ asset('assets/css/plugins/style.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/css/plugins/flatpickr.min.css') }}">
 
     <link rel="stylesheet" href="{{ asset('assets/css/plugins/animate.min.css') }}">
 
@@ -123,9 +124,7 @@
 
 
 <body class="{{ $themeColor }}">
- <div id="pageloader" class="hidden Ploader" style="display: none">
-    Loading ...
-  </div>  
+
     <!-- [ Pre-loader ] start -->
     <div class="loader-bg">
         <div class="loader-track">
@@ -133,13 +132,13 @@
         </div>
     </div>
     <div id="loader" class="hidden" style="display: none">
-    Loading ...
+ 
   </div>
     @include('partials.admin.menu')
+
     <!-- [ navigation menu ] end -->
     <!-- [ Header ] start -->
     @include('partials.admin.header')
-
     <!-- Modal -->
     <div class="modal notification-modal fade" id="notification-modal" tabindex="-1" role="dialog" aria-hidden="true">
         <div class="modal-dialog" role="document">
@@ -215,6 +214,21 @@
                                 @yield('breadcrumb')
                             </ul>
                         </div>
+                        <?php 
+                        if(isset($_SERVER['HTTP_REFERER']) && !empty($_SERVER['HTTP_REFERER'])){
+                        $referer = filter_var($_SERVER['HTTP_REFERER'], FILTER_VALIDATE_URL);
+	
+	if (!empty($referer)) {
+		
+		echo '<p><a href="'. $referer .'" title="Return to the previous page">« Go back</a></p>';
+		
+	} else {
+		
+		echo '<p><a href="javascript:history.go(-1)" title="Return to the previous page">« Go back</a></p>';
+		
+	}
+}
+?>
                         <div class="col action-btn-col">
                             @yield('action-btn')
                         </div>

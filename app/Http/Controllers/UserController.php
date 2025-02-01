@@ -35,9 +35,9 @@ class UserController extends Controller
         $user = \Auth::user();
         if (\Auth::user()->can('manage user')) {
             if (\Auth::user()->type == 'super admin') {
-                $users = User::where('created_by', '=', $user->creatorId())->where('type', '=', 'company')->with(['currentPlan'])->get();
+                $users = User::where('created_by', '=', $user->creatorId())->where('type', '=', 'company')->with(['currentPlan'])->orderBy('id', 'DESC')->get();
             } else {
-                $users = User::where('created_by', '=', $user->creatorId())->where('type', '!=', 'client')->with(['currentPlan'])->get();
+                $users = User::where('created_by', '=', $user->creatorId())->where('type', '!=', 'client')->with(['currentPlan'])->orderBy('id', 'DESC')->get();
             }
 
             return view('user.index')->with('users', $users);
@@ -53,6 +53,11 @@ class UserController extends Controller
         $customFields = CustomField::where('created_by', '=', \Auth::user()->creatorId())->where('module', '=', 'user')->get();
         $user = \Auth::user();
         $roles = Role::where('created_by', '=', $user->creatorId())->where('name', '!=', 'client')->get()->pluck('name', 'id');
+        if($roles->isEmpty()){
+            $roles->prepend('No role exist', '');
+        }else{
+            $roles->prepend('Select Role', ''); 
+        }
         if (\Auth::user()->can('create user')) {
             return view('user.create', compact('roles', 'customFields'));
         } else {
@@ -199,7 +204,7 @@ class UserController extends Controller
                     return redirect()->back()->with('error', __('Your user limit is over, Please upgrade plan.'));
                 }
             }
-                SellerDetail::saveData($request,$user->id,0,0,\Auth::user()->creatorId());
+                SellerDetail::saveData($request,$user->id,NULL,NULL,\Auth::user()->creatorId());
             // Send Email
             $setings = Utility::settings();
             if ($setings['new_user'] == 1) {
@@ -212,9 +217,11 @@ class UserController extends Controller
                     'email' => $user->email,
                     'password' => $user->password,
                 ];
-              
-                $resp = Utility::sendEmailTemplate('new_user', [$user->id => $user->email], $userArr);
-
+                if($enableLogin==1){
+                    $resp = Utility::sendEmailTemplate('new_user', [$user->id => $user->email], $userArr);
+                }else{
+                    $resp = Utility::sendEmailTemplate('new_user_login_disabled', [$user->id => $user->email], $userArr);
+                }
                 if (\Auth::user()->type == 'super admin') {
                     return redirect()->route('users.index')->with('success', __('Company successfully created.') . ((!empty($resp) && $resp['is_success'] == false && !empty($resp['error'])) ? '<br> <span class="text-danger">' . $resp['error'] . '</span>' : ''));
                 } else {
@@ -287,7 +294,7 @@ class UserController extends Controller
                 $roles[] = $role->id;
                 $user->roles()->sync($roles);
                 $created_by = \Auth::user()->creatorId();
-                SellerDetail::saveData($request,$user->id,0,0,\Auth::user()->creatorId());
+                SellerDetail::saveData($request,$user->id,NULL,NULL,\Auth::user()->creatorId());
                 return redirect()->route('users.index')->with(
                     'success', 'company successfully updated.'
                 );
@@ -317,7 +324,7 @@ class UserController extends Controller
                 $user->roles()->sync($roles);
                 //Seller Detail section
     
-                SellerDetail::saveData($request,$user->id,0,0,\Auth::user()->creatorId());
+                SellerDetail::saveData($request,$user->id,NULL,NULL,\Auth::user()->creatorId());
                 return redirect()->route('users.index')->with(
                     'success', 'User successfully updated.'
                 );
@@ -432,6 +439,8 @@ class UserController extends Controller
 
         if (!empty($request->profile)) {
             $user['avatar'] = $fileNameToStore;
+        }else{
+            $user['avatar'] ='';
         }
         $user['name'] = $request['name'];
         $user['email'] = $request['email'];
@@ -606,8 +615,9 @@ class UserController extends Controller
 
             return redirect()->back()->with('error', $messages->first());
         }
-
+        $pasword=$request->password;
         $user = User::where('id', $id)->first();
+        $enableLogin=1;
         $user->forceFill([
             'password' => Hash::make($request->password),
             'is_enable_login' => 1,
@@ -615,12 +625,26 @@ class UserController extends Controller
 
         if(\Auth::user()->type == 'super admin')
         {
+            $userArr = [
+                'email' => $user->email,
+                'password' =>  $pasword,
+            ];
+            if($enableLogin==1){
+                $resp = Utility::sendEmailTemplate('enable_dashboard_login', [$user->id => $user->email], $userArr);
+            }
         return redirect()->route('users.index')->with(
             'success', 'Company Password successfully updated.'
         );
     }
     else
     {
+        $userArr = [
+            'email' => $user->email,
+            'password' => $pasword,
+        ];
+        if($enableLogin==1){
+            $resp = Utility::sendEmailTemplate('enable_dashboard_login', [$user->id => $user->email], $userArr);
+        }
         return redirect()->route('users.index')->with(
             'success', 'User Password successfully updated.'
         );
@@ -719,23 +743,32 @@ class UserController extends Controller
 
             if($authUser->type == 'super admin')
             {
-                return redirect()->back()->with('success', __('Company login disable successfully.'));
+                return redirect()->back()->with('success', __('Company login disabled successfully.'));
             }
             else
             {
-                return redirect()->back()->with('success', __('User login disable successfully.'));
+                return redirect()->back()->with('success', __('User login disabled successfully.'));
             }
         } else {
             $user->is_enable_login = 1;
+            $enableLogin=1;
             $user->save();
+            $userArr = [
+                'email' => $user->email,
+                'password' => "Please use your previous password or click on forgot password",
+            ];
+            if($enableLogin==1){
+                $resp = Utility::sendEmailTemplate('enable_dashboard_login', [$user->id => $user->email], $userArr);
+            }
             if($authUser->type == 'super admin')
             {
-                return redirect()->back()->with('success', __('Company login enable successfully.'));
+                return redirect()->back()->with('success', __('Company login enabled successfully.'));
             }
             else
             {
-                return redirect()->back()->with('success', __('User login enable successfully.'));
+                return redirect()->back()->with('success', __('User login enabled successfully.'));
             }
+           
         }
     }
 }

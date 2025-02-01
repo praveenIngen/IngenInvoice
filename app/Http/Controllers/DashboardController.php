@@ -14,6 +14,9 @@ use App\Models\DealTask;
 use App\Models\Employee;
 use App\Models\Event;
 use App\Models\Expense;
+use App\Models\Vender;
+use App\Models\Customer;
+use App\Models\Budget;
 use App\Models\Goal;
 use App\Models\Invoice;
 use App\Models\Job;
@@ -65,7 +68,7 @@ class DashboardController extends Controller
         $adminSettings = Utility::settings();
         if ($adminSettings['display_landing_page'] == 'on' && \Schema::hasTable('landing_page_settings')) {
 
-            return view('landingpage::layouts.landingpage' , compact('adminSettings'));
+            return redirect('login');
 
         } else {
             return redirect('login');
@@ -123,9 +126,9 @@ class DashboardController extends Controller
                     // $data['expenseCategory'] = $exCategory;
                     // $data['expenseCatAmount'] = $exAmount;
 
-                    $data['incExpBarChartData'] = \Auth::user()->getincExpBarChartData();
-                    //                dd( $data['incExpBarChartData']);
-                    $data['incExpLineChartData'] = \Auth::user()->getIncExpLineChartDate();
+                    // $data['incExpBarChartData'] = \Auth::user()->getincExpBarChartData();
+                    // //                dd( $data['incExpBarChartData']);
+                    // $data['incExpLineChartData'] = \Auth::user()->getIncExpLineChartDate();
 
                     $data['currentYear'] = date('Y');
                     $data['currentMonth'] = date('M');
@@ -145,31 +148,34 @@ class DashboardController extends Controller
 
                     $data['weeklyInvoice'] = \Auth::user()->weeklyInvoice();
                     $data['monthlyInvoice'] = \Auth::user()->monthlyInvoice();
-                    // $data['recentBill'] = Bill::join('venders', 'bills.vender_id', '=', 'venders.id')
-                    // ->where('bills.created_by', '=', \Auth::user()->creatorId())
-                    // ->orderBy('bills.id', 'desc')
-                    // ->limit(5)
-                    // ->select('bills.*', 'venders.name as vender_name')
-                    // ->get();
-
-                    // $data['weeklyBill'] = \Auth::user()->weeklyBill();
-                    // $data['monthlyBill'] = \Auth::user()->monthlyBill();
-                    // $data['goals'] = Goal::where('created_by', '=', \Auth::user()->creatorId())->where('is_display', 1)->get();
-
-                    //Storage limit
+                   
                     $data['users'] = User::find(\Auth::user()->creatorId());
                     $data['plan'] = Plan::getPlan(\Auth::user()->show_dashboard());
+                    $data['sumarry']=$this->incomeVsExpenseSummary();
+             
                     if ($data['plan']->storage_limit > 0) {
                         $data['storage_limit'] = ($data['users']->storage_limit / $data['plan']->storage_limit) * 100;
                     } else {
                         $data['storage_limit'] = 0;
                     }
-
-                    // dd($data);
+                    $data['chartArr'] = [];
+                    if(isset($_GET['category']) && isset($_GET['period']) && $_GET['period'] == 'yearly')
+                    {
+                        $data['chartArr'] = [];
+                
+                        foreach ($data['sumarry']['profit'] as $innerArray) {
+                            foreach ($innerArray as $value) {
+                                $data['chartArr'][] = $value;
+                            }
+                        }
+                    }
+                    elseif(isset($sumarry['profit'][0])){
+                        $data['chartArr'] = $data['sumarry']['profit'][0];
+                    }
                     return view('dashboard.account-dashboard', $data);
                 } else {
 
-                    return $this->hrm_dashboard_index();
+                    return view('dashboard.dashboard');
                 }
 
             }
@@ -179,6 +185,234 @@ class DashboardController extends Controller
             }
         }
 
+        public function incomeVsExpenseSummary()
+        {
+            if (\Auth::user()->can('income vs expense report') || \Auth::user()->can('show account dashboard')) {
+                $account = BankAccount::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('holder_name', 'id');
+                $account->prepend('Select Account', '');
+                $vender = Vender::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+                $vender->prepend('Select Vendor', '');
+                $customer = Customer::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+                $customer->prepend('Select Customer', '');
+    
+                $category = ProductServiceCategory::where('created_by', '=', \Auth::user()->creatorId())->whereIn(
+                    'type', [
+                        'income',
+                        'expense',
+                    ]
+                )->get()->pluck('name', 'id');
+                $category->prepend('Select Category', '');
+    
+                    $month = $this->yearMonth();
+             
+                $periods = Budget::$period;
+    
+                $data['monthList'] = $month;
+                $data['yearList'] = $this->yearList();
+                $data['periods'] = $periods;
+                $filter['category'] = __('All');
+                $filter['customer'] = __('All');
+                $filter['vender'] = __('All');
+    
+    
+               
+                    $yearList[date('Y')] =  date('Y');
+                
+             
+                    $year = date('Y');
+                
+                $data['currentYear'] = $year;
+    
+                // ------------------------------TOTAL PAYMENT EXPENSE-----------------------------------------------------------
+                $expensesData = Payment::selectRaw('sum(payments.amount) as amount,MONTH(date) as month,YEAR(date) as year');
+                $expensesData->where('payments.created_by', '=', \Auth::user()->creatorId());
+             
+              
+                $expensesData->groupBy('month', 'year');
+                $expensesData = $expensesData->get();
+    
+                // ------------------------------TOTAL BILL EXPENSE-----------------------------------------------------------
+    
+                $bills = Bill::selectRaw('MONTH(send_date) as month,YEAR(send_date) as year,category_id,bill_id,id')->where('created_by', \Auth::user()->creatorId())->where('status', '!=', 0);
+              
+                $bills = $bills->get();
+    
+                $paymentTotalArray = [];
+                foreach ($expensesData as $expense) {
+                    $paymentTotalArray[$expense->year][$expense->month][] = $expense->amount;
+                }
+                $expenseArr = [];
+    
+                foreach ($yearList as $year) {
+                    $expenseArr[$year] = [];
+    
+                    for ($i = 1; $i <= 12; $i++) {
+                        $expenseArr[$year][$i] = 0;
+                    }
+    
+                    if (isset($paymentTotalArray[$year])) {
+                        foreach ($paymentTotalArray[$year] as $month => $values) {
+                            $expenseArr[$year][$month] = array_sum($values);
+                        }
+                    }
+                }
+    
+                $billTotalArray = [];
+                foreach ($bills as $bill) {
+                    $billTotalArray[$bill->year][$bill->month][] = $bill->getTotal();
+                }
+    
+                $billArr = [];
+                $expensesum = [];
+    
+                foreach ($yearList as $year) {
+                    $billArr[$year] = [];
+    
+                    for ($i = 1; $i <= 12; $i++) {
+                        $billArr[$year][$i] = 0;
+                    }
+    
+                    if (isset($billTotalArray[$year])) {
+                        foreach ($billTotalArray[$year] as $month => $values) {
+                            $billArr[$year][$month] = array_sum($values);
+                        }
+                    }
+                }
+    
+    
+                $billsum = Utility::totalDashboardSum($billArr , $yearList);
+    
+                $expensesum = Utility::totalDashboardSum($expenseArr , $yearList);
+    
+                $chartExpenseArr = Utility::totalDashboardData($billArr, $expenseArr , $yearList);
+    
+                // ------------------------------TOTAL REVENUE INCOME-----------------------------------------------------------
+    
+                $incomesData = Revenue::selectRaw('sum(revenues.amount) as amount,MONTH(date) as month,YEAR(date) as year');
+                $incomesData->where('revenues.created_by', '=', \Auth::user()->creatorId());
+                
+                $incomesData->groupBy('month', 'year');
+                $incomesData = $incomesData->get();
+    
+                // ------------------------------TOTAL INVOICE INCOME-----------------------------------------------------------
+                $invoices = Invoice::selectRaw('MONTH(send_date) as month,YEAR(send_date) as year,category_id,invoice_id,id')
+                    ->where('created_by', \Auth::user()->creatorId())->where('status', '!=', 0);
+                   
+                $invoices = $invoices->get();
+    
+                $revenueTotalArray = [];
+                foreach ($incomesData as $income) {
+                    $revenueTotalArray[$income->year][$income->month][] = $income->amount;
+                }
+    
+                $incomeArr = [];
+    
+                foreach ($yearList as $year) {
+                    $incomeArr[$year] = [];
+    
+                    for ($i = 1; $i <= 12; $i++) {
+                        $incomeArr[$year][$i] = 0;
+                    }
+    
+                    if (isset($revenueTotalArray[$year])) {
+                        foreach ($revenueTotalArray[$year] as $month => $values) {
+                            $incomeArr[$year][$month] = array_sum($values);
+                        }
+                    }
+                }
+    
+                $invoiceTotalArray = [];
+                foreach ($invoices as $invoice) {
+                    $invoiceTotalArray[$invoice->year][$invoice->month][] = $invoice->getTotal();
+                }
+    
+                $invoiceArr = [];
+                $incomesum = [];
+    
+                foreach ($yearList as $year) {
+                    $invoiceArr[$year] = [];
+    
+                    for ($i = 1; $i <= 12; $i++) {
+                        $invoiceArr[$year][$i] = 0;
+                    }
+    
+                    if (isset($invoiceTotalArray[$year])) {
+                        foreach ($invoiceTotalArray[$year] as $month => $values) {
+                            $invoiceArr[$year][$month] = array_sum($values);
+                        }
+                    }
+                }
+    
+                $invoicesum = Utility::totalDashboardSum($invoiceArr , $yearList);
+    
+                $incomesum = Utility::totalDashboardSum($incomeArr , $yearList);
+    
+                $chartIncomeArr = Utility::totalDashboardData($invoiceArr, $incomeArr , $yearList);
+    
+    
+    
+                $profit = [];
+    
+                    if (count($chartIncomeArr) === count($chartExpenseArr) && count($chartIncomeArr[0]) === count($chartExpenseArr[0])) {
+                        foreach ($chartIncomeArr as $i => $values1) {
+                            foreach ($values1 as $j => $value1) {
+                                $profit[$i][$j] = $value1 - $chartExpenseArr[$i][$j];
+                            }
+                        }
+                    }
+    
+    
+                $data['paymentExpenseTotal'] = $expensesum;
+                $data['billExpenseTotal'] = $billsum;
+                $data['revenueIncomeTotal'] = $incomesum;
+                $data['invoiceIncomeTotal'] = $invoicesum;
+                $data['profit'] = $profit;
+                $data['account'] = $account;
+                $data['vender'] = $vender;
+                $data['customer'] = $customer;
+                $data['category'] = $category;
+    
+                $filter['startDateRange'] = 'Jan-' . $year;
+                $filter['endDateRange'] = 'Dec-' . $year;
+    
+                return  $data;
+            } else {
+                return redirect()->back()->with('error', __('Permission denied.'));
+            }
+        }
+
+        
+    public function yearList()
+    {
+        $starting_year = date('Y', strtotime('-5 year'));
+        $ending_year = date('Y');
+
+        foreach (range($ending_year, $starting_year) as $year) {
+            $years[$year] = $year;
+        }
+
+        return $years;
+    }
+
+
+    public function yearMonth()
+    {
+
+        $month[] = __('January');
+        $month[] = __('February');
+        $month[] = __('March');
+        $month[] = __('April');
+        $month[] = __('May');
+        $month[] = __('June');
+        $month[] = __('July');
+        $month[] = __('August');
+        $month[] = __('September');
+        $month[] = __('October');
+        $month[] = __('November');
+        $month[] = __('December');
+
+        return $month;
+    }
 
     public function project_dashboard_index()
     {
@@ -529,9 +763,67 @@ class DashboardController extends Controller
                     $user['most_purchese_plan'] = '-';
                 }
 
-                $chartData = $this->getOrderChart(['duration' => 'week']);
+                $data['latestIncome'] = Revenue::with(['customer'])->where('created_by', '=', \Auth::user()->creatorId())->orderBy('id', 'desc')->limit(5)->get();
+                $data['latestExpense'] = Payment::with(['vender'])->where('created_by', '=', \Auth::user()->creatorId())->orderBy('id', 'desc')->limit(5)->get();
+                $currentYer = date('Y');
 
-                return view('dashboard.super_admin', compact('user', 'chartData'));
+                $incomeCategory = ProductServiceCategory::where('created_by', '=', \Auth::user()->creatorId())
+                    ->where('type', '=', 'income')->get();
+
+                $inColor = array();
+                $inCategory = array();
+                $inAmount = array();
+                for ($i = 0; $i < count($incomeCategory); $i++) {
+                    $inColor[] = '#' . $incomeCategory[$i]->color;
+                    $inCategory[] = $incomeCategory[$i]->name;
+                    $inAmount[] = $incomeCategory[$i]->incomeCategoryRevenueAmount();
+                }
+
+                $data['incomeCategoryColor'] = $inColor;
+                $data['incomeCategory'] = $inCategory;
+                $data['incomeCatAmount'] = $inAmount;
+
+                $expenseCategory = ProductServiceCategory::where('created_by', '=', \Auth::user()->creatorId())
+                    ->where('type', '=', 'expense')->get();
+                $exColor = array();
+                $exCategory = array();
+                $exAmount = array();
+                for ($i = 0; $i < count($expenseCategory); $i++) {
+                    $exColor[] = '#' . $expenseCategory[$i]->color;
+                    $exCategory[] = $expenseCategory[$i]->name;
+                    $exAmount[] = $expenseCategory[$i]->expenseCategoryAmount();
+                }
+
+                $data['expenseCategoryColor'] = $exColor;
+                $data['expenseCategory'] = $exCategory;
+                $data['expenseCatAmount'] = $exAmount;
+
+                $data['incExpBarChartData'] = \Auth::user()->getincExpBarChartData();
+                //                dd( $data['incExpBarChartData']);
+                $data['incExpLineChartData'] = \Auth::user()->getIncExpLineChartDate();
+
+                $data['currentYear'] = date('Y');
+                $data['currentMonth'] = date('M');
+
+                $constant['taxes'] = Tax::where('created_by', \Auth::user()->creatorId())->count();
+                $constant['category'] = ProductServiceCategory::where('created_by', \Auth::user()->creatorId())->count();
+                $constant['units'] = ProductServiceUnit::where('created_by', \Auth::user()->creatorId())->count();
+                // $constant['bankAccount'] = BankAccount::where('created_by', \Auth::user()->creatorId())->count();
+                $data['constant'] = $constant;
+                // $data['bankAccountDetail'] = BankAccount::where('created_by', '=', \Auth::user()->creatorId())->get();
+                $data['recentInvoice'] = Invoice::join('customers', 'invoices.customer_id', '=', 'customers.id')
+                    ->where('invoices.created_by', '=', \Auth::user()->creatorId())
+                    ->orderBy('invoices.id', 'desc')
+                    ->limit(5)
+                    ->select('invoices.*', 'customers.name as customer_name')
+                    ->get();
+
+                $data['weeklyInvoice'] = \Auth::user()->weeklyAdminInvoice();
+                $data['monthlyInvoice'] = \Auth::user()->monthlyAdminInvoice();
+               $data['user']=$user;
+               $data['monthList']=  $this->yearMonth();
+
+                return view('dashboard.super_admin', $data);
 
             } elseif (Auth::user()->type == 'client') {
                 $transdate = date('Y-m-d', time());

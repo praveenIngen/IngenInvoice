@@ -58,6 +58,10 @@
             }else if((maxAttr!=undefined && minAttr!=undefined) && (valueData=="" || (valueData!="" && (valueData.length>maxAttr || valueData.length<minAttr)))){
                  errormessage="Please fill the valid data  with minimum "+minAttr+" digit "+type+" and maximum "+maxAttr+ " digit  "+type+"\n";
             }
+            var CurrentDate = new Date();
+            if(value=="date" && valueData < CurrentDate){
+               errormessage="Please fill the date greater than or equal to current date";
+            }
             if(errormessage!=""){
                 $('#'+value).next('.error-message').remove();
                 $errorSpan = $('<span>').addClass('error-message').text(errormessage);

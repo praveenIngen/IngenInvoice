@@ -1,37 +1,6 @@
 <style>
-    #input-wrapper .CountryCode {
-  position: absolute;
-}
-
-#input-wrapper span.CountryCode {
-    z-index: 99;
-    /* line-height: 25px; */
-    padding: 8px;
-    position: fixed;
-    top: 57%;
-    margin-left: -7%;
-}
-
-#input-wrapper .form-control {
-  /* height: 25px; */
-  text-indent: 35px;
-  display: block;
-    width: 100%;
-    padding: 0.575rem 1rem;
-    font-size: 0.875rem;
-    font-weight: 400;
-    line-height: 1.5;
-    color: #293240;
-    background-color: #ffffff;
-    background-clip: padding-box;
-    border: 1px solid #ced4da;
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    appearance: none;
-    border-radius: 6px;
-    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
-}
- </style>
+  
+    </style>
 {{ Form::open(['url' => 'users', 'method' => 'post', 'id'=>'userCreate', 'class'=>'']) }}
 <div class="modal-body">
     <div class="row">
@@ -103,10 +72,12 @@
                 </div>
             </div>
             <div class="col-md-6">
-                <div class="form-group" id="input-wrapper">
-                    {{ Form::label('contact_number', __('Contact Number'), ['class' => 'form-label']) }}
-                    <span class="CountryCode" readonly>+230</span>
-                    {{ Form::number('contact_number', null, ['class' => 'form-control','maxlength'=>'15' , 'minlength'=>'9',  'placeholder' => __('Contact Number')]) }}
+                <div class="form-group">
+                    {{ Form::label('contact_number', __('Contact Number'), ['class' => 'form-label']) }}<x-required></x-required>
+                   <div class="input-group">
+                        <span class="input-group-text">+230</span>
+                         <input type="number" aria-label="contact_number" maxlength="15"  minlength="9" name="contact_number" id="contact_number" class="form-control"></br>
+                    </div>
                     @error('contact_number')
                         <small class="invalid-name" role="alert">
                             <strong class="text-danger">{{ $message }}</strong>
@@ -114,10 +85,15 @@
                     @enderror
                 </div>
             </div>
-          
+            <div class="col-md-6">
+                <div class="form-group">
+                   {{ Form::label('Plan', __('Plan'),['class'=>'form-label']) }}<x-required></x-required>
+                   {{ Form::select('Plan',array('free' => 'Free Plan', 'Silver' => 'Silver','Gold'=>'Gold','Diamond'=>'Diamond'),null, array('class' => 'form-control select','required'=>'required')) }}
+                </div>
+            </div>
             {!! Form::hidden('role', 'company', null, ['class' => 'form-control select2', 'required' => 'required']) !!}
             <div class="col-md-6 mb-3 form-group mt-4">
-                <label for="password_switch">{{ __('Login is enable') }}</label>
+                <label for="password_switch">{{ __('Enable Login') }}</label>
                 <div class="form-check form-switch custom-switch-v1 float-end">
                     <input type="checkbox" name="password_switch" class="form-check-input input-primary pointer" value="on" id="password_switch">
                     <label class="form-check-label" for="password_switch"></label>
@@ -205,7 +181,7 @@
 <script>
    $(document).on('click', '#userCreateSubmit', function (event)
    {
-       var variableName=['name','email','vat_registration_number','business_registration_number','business_address'];
+       var variableName=['name','email','vat_registration_number','business_registration_number','business_address','contact_number','role'];
        var submitData=false;
        $.each(variableName, function (key, value) {
         var errormessage="";
@@ -239,18 +215,23 @@
                 $errorSpan = $('<span>').addClass('error-message').text(errormessage);
                 $('#'+value).addClass("error");
                 $('#'+value).after($errorSpan);
+                if(value=="contact_number" ){
+                    $('.error-message').addClass('width100');
+                }
+          
                
                 submitData=false;
             }else{
                 // $errorSpan = $('<span>').removeClass('error-message').text();
                 $('#'+value).removeClass("error");
+               
                 $('#'+value).next('.error-message').remove();
                 submitData=true;
             }
         });
        if(submitData===true &&  ($('#'+variableName[0]).hasClass("error")==false) && 
            ($('#'+variableName[1]).hasClass("error")==false) && ($('#'+variableName[2]).hasClass("error")==false) && 
-           ($('#'+variableName[3]).hasClass("error")==false) && ($('#'+variableName[4]).hasClass("error")==false)){
+           ($('#'+variableName[3]).hasClass("error")==false) && ($('#'+variableName[4]).hasClass("error")==false) && ($('#'+variableName[5]).hasClass("error")==false)){
         $("#userCreate").submit();
        }else{
         return false;

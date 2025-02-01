@@ -157,7 +157,7 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         $settings = Utility::settings();
 
-        $date_formate = !empty($settings['site_date_format']) ? $settings['site_date_format'] : 'd-m-y';
+        $date_formate = !empty($settings['site_date_format']) ? $settings['site_date_format'] : 'd-m-Y';
         $time_formate = !empty($settings['site_time_format']) ? $settings['site_time_format'] : 'H:i';
 
         return date($date_formate . ' ' . $time_formate, strtotime($date));
@@ -857,6 +857,106 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasOne('App\Models\Plan', 'id', 'plan');
     }
 
+    public function yearMonth()
+    {
+
+        $month[] = __('January');
+        $month[] = __('February');
+        $month[] = __('March');
+        $month[] = __('April');
+        $month[] = __('May');
+        $month[] = __('June');
+        $month[] = __('July');
+        $month[] = __('August');
+        $month[] = __('September');
+        $month[] = __('October');
+        $month[] = __('November');
+        $month[] = __('December');
+
+        return $month;
+    }
+
+    public function invoicesAdminData($start, $current)
+    {
+        $start = strtotime(date('Y-01'));
+        $end = strtotime(date('Y-12'));
+    // }
+
+        $monthSection=$this->yearMonth();
+
+        $InvoiceProducts = Invoice::select('invoices.invoice_id as invoice')
+            ->selectRaw('sum((invoice_products.price * invoice_products.quantity) - invoice_products.discount) as price')
+            ->selectRaw('(SELECT SUM(credit_notes.amount) FROM credit_notes WHERE credit_notes.invoice = invoices.id) as credit_price')
+            ->selectRaw('MONTH(issue_date) as month')
+            ->selectRaw('(SELECT SUM((price * quantity - discount) * (taxes.rate / 100)) FROM invoice_products
+             LEFT JOIN taxes ON FIND_IN_SET(taxes.id, invoice_products.tax) > 0
+             WHERE invoice_products.invoice_id = invoices.id) as total_tax')
+            ->leftJoin('invoice_products', 'invoice_products.invoice_id', 'invoices.id')
+            ->where('issue_date', '>=', date('Y-m-01', $start))->where('issue_date', '<=', date('Y-m-t', $end))
+            ->groupBy('invoice','month')
+            ->get()
+            ->keyBy('invoice','month')
+            ->toArray();
+
+
+        $invoicepayment = Invoice::select('invoices.invoice_id as invoice')
+            ->selectRaw('sum((invoice_payments.amount)) as pay_price')
+            ->leftJoin('invoice_payments', 'invoice_payments.invoice_id', 'invoices.id')
+            ->where('issue_date', '>=', date('Y-m-01', $start))->where('issue_date', '<=', date('Y-m-t', $end))
+            ->groupBy('invoice')
+            ->get()
+            ->keyBy('invoice')
+            ->toArray();
+
+        $mergedArray = [];
+
+        foreach ($InvoiceProducts as $key => $value) {
+            if (isset($invoicepayment[$key])) {
+                $mergedArray[$key] = array_merge($value, $invoicepayment[$key]);
+              
+            }
+        }
+       
+        $invoiceTotal = [];
+        $invoicePaid = [];
+        $invoiceDue = [];
+        $invoiceData = [];
+       $total=0;
+       $Paid=0;
+       $due=0;
+       $monthData=0;
+    //    print_r($monthSection);
+    //    die;
+       foreach($monthSection as $key=>$monthValue){
+        foreach ($mergedArray as $invoice) {
+            $month_number = date("n",strtotime($monthValue));
+            if($month_number==$invoice['month']){
+            $total += $invoice['price'] + $invoice['total_tax'];
+            $Paid  += $invoice['pay_price'] + $invoice['credit_price'];
+            $due  += ($invoice['price'] + $invoice['total_tax']) - $invoice['credit_price'] - $invoice['pay_price'];
+            $invoiceTotal[$month_number] = round($total,2);
+            $invoicePaid[$month_number]  = round($Paid,2);
+            $invoiceDue[$month_number]   = round($due,2);
+        }else{
+            $invoiceTotal[$month_number] = 0;
+            $invoicePaid[$month_number]  = 0;
+            $invoiceDue[$month_number]   = 0;
+        }
+       
+          
+        }
+    }
+
+        $invoiceData = [
+            "invoiceTotal" => array_values($invoiceTotal),
+            "invoicePaid" => array_values($invoicePaid),
+            'invoiceDue' => array_values($invoiceDue),
+        ];
+
+        return $invoiceData;
+    }
+
+
     public function invoicesData($start, $current)
     {
         $InvoiceProducts = Invoice::select('invoices.invoice_id as invoice')
@@ -1047,6 +1147,18 @@ class User extends Authenticatable implements MustVerifyEmail
 
         return $invoiceDetail;
     }
+    public function weeklyAdminInvoice()
+    {
+        $staticstart = date('Y-m-d', strtotime('last Week'));
+        $currentDate = date('Y-m-d');
+        $invoices = self::invoicesAdminData($staticstart, $currentDate);
+
+        $invoiceDetail['invoiceTotal'] = $invoices['invoiceTotal'];
+        $invoiceDetail['invoicePaid'] = $invoices['invoicePaid'];
+        $invoiceDetail['invoiceDue'] = $invoices['invoiceDue'];
+
+        return $invoiceDetail;
+    }
 
     public function monthlyInvoice()
     {
@@ -1060,7 +1172,18 @@ class User extends Authenticatable implements MustVerifyEmail
 
         return $invoiceDetail;
     }
+    public function monthlyAdminInvoice()
+    {
+        $staticstart = date('Y-m-d', strtotime('last Month'));
+        $currentDate = date('Y-m-d');
+        $invoices = self::invoicesAdminData($staticstart, $currentDate);
 
+        $invoiceDetail['invoiceTotal'] = $invoices['invoiceTotal'];
+        $invoiceDetail['invoicePaid'] = $invoices['invoicePaid'];
+        $invoiceDetail['invoiceDue'] = $invoices['invoiceDue'];
+
+        return $invoiceDetail;
+    }
     // public function weeklyBill()
     // {
     //     $staticstart = date('Y-m-d', strtotime('last Week'));
@@ -1405,6 +1528,8 @@ class User extends Authenticatable implements MustVerifyEmail
         // Email Template
         $emailTemplate = [
             'New User',
+            'New User Login Disabled',
+            'Enable Dashboard Login',
             'New Client',
             'New Support Ticket',
             'Lead Assigned',
@@ -1451,6 +1576,50 @@ class User extends Authenticatable implements MustVerifyEmail
         $defaultTemplate = [
             'new_user' => [
                 'subject' => 'New User',
+                'lang' => [
+                    'ar' => '<p>مرحبا،&nbsp;<br>مرحبا بك في {app_name}.</p><p><b>البريد الإلكتروني </b>: {email}<br><b>كلمه السر</b> : {password}</p><p>{app_url}</p><p>شكر،<br>{app_name}</p>',
+                    'zh' => '<p>您好，<br>欢迎使用 {app_name}。</p><p><b>电子邮件 </b>：{email}<br><b>密码</b>：{password} </p><p>{app_url}</p><p>谢谢，<br>{app_name}</p>',
+                    'da' => '<p>Hej,&nbsp;<br>Velkommen til {app_name}.</p><p><b>E-mail </b>: {email}<br><b>Adgangskode</b> : {password}</p><p>{app_url}</p><p>Tak,<br>{app_name}</p>',
+                    'de' => '<p>Hallo,&nbsp;<br>Willkommen zu {app_name}.</p><p><b>Email </b>: {email}<br><b>Passwort</b> : {password}</p><p>{app_url}</p><p>Vielen Dank,<br>{app_name}</p>',
+                    'en' => '<p>Hello,&nbsp;<br>Welcome to {app_name}.</p><p><b>Email </b>: {email}<br><b>Password</b> : {password}</p><p>{app_url}</p><p>Thanks,<br>{app_name}</p>',
+                    'es' => '<p>Hola,&nbsp;<br>Bienvenido a {app_name}.</p><p><b>Correo electrónico </b>: {email}<br><b>Contraseña</b> : {password}</p><p>{app_url}</p><p>Gracias,<br>{app_name}</p>',
+                    'fr' => '<p>Bonjour,&nbsp;<br>Bienvenue à {app_name}.</p><p><b>Email </b>: {email}<br><b>Mot de passe</b> : {password}</p><p>{app_url}</p><p>Merci,<br>{app_name}</p>',
+                    'he' => '<p>שלום,&nbsp;<br>ברוכים הבאים אל {app_name}.</p><p><b>דוא"ל </b>: {email}<br><b>סיסמה</b> : {password} </p><p>{app_url}</p><p>תודה,<br>{app_name}</p>',
+                    'it' => '<p>Ciao,&nbsp;<br>Benvenuto a {app_name}.</p><p><b>E-mail </b>: {email}<br><b>Parola d\'ordine</b> : {password}</p><p>{app_url}</p><p>Grazie,<br>{app_name}</p>',
+                    'ja' => '<p>こんにちは、&nbsp;<br>へようこそ {app_name}.</p><p><b>Eメール </b>: {email}<br><b>パスワード</b> : {password}</p><p>{app_url}</p><p>おかげで、<br>{app_name}</p>',
+                    'nl' => '<p>Hallo,&nbsp;<br>Welkom bij {app_name}.</p><p><b>E-mail </b>: {email}<br><b>Wachtwoord</b> : {password}</p><p>{app_url}</p><p>Bedankt,<br>{app_name}</p>',
+                    'pl' => '<p>Witaj,&nbsp;<br>Witamy w {app_name}.</p><p><b>E-mail </b>: {email}<br><b>Hasło</b> : {password}</p><p>{app_url}</p><p>Dzięki,<br>{app_name}</p>',
+                    'ru' => '<p>Привет,&nbsp;<br>Добро пожаловать в {app_name}.</p><p><b>Электронное письмо </b>: {email}<br><b>пароль</b> : {password}</p><p>{app_url}</p><p>Спасибо,<br>{app_name}</p>',
+                    'pt' => '<p>Olá,<br>Bem-vindo ao {app_name}.</p><p><b>E-mail </b>: {email}<br><b>Senha</b> : {password}</p><p>{app_url}</p><p>Obrigada,<br>{app_name}</p>',
+                    'tr' => '<p>Merhaba,&nbsp;<br>{app_name} e hoş geldiniz.</p><p><b>E-posta </b>: {email}<br><b>Şifre</b> : {şifre} </p><p>{app_url}</p><p>Teşekkürler,<br>{app_name}</p>',
+                    'pt-br' => '<p>Olá,<br>Bem-vindo ao {app_name}.</p><p><b>E-mail </b>: {email}<br><b>Senha</b> : {password}</p><p>{app_url}</p><p>Obrigada,<br>{app_name}</p>',
+
+                ],
+            ],
+            'new_user_login_disabled' => [
+                'subject' => 'New User Login Disabled',
+                'lang' => [
+                    'ar' => '<p>مرحبا،&nbsp;<br>مرحبا بك في {app_name}.</p><p><b>البريد الإلكتروني </b>: {email}<br><b>كلمه السر</b> : {password}</p><p>{app_url}</p><p>شكر،<br>{app_name}</p>',
+                    'zh' => '<p>您好，<br>欢迎使用 {app_name}。</p><p><b>电子邮件 </b>：{email}<br><b>密码</b>：{password} </p><p>{app_url}</p><p>谢谢，<br>{app_name}</p>',
+                    'da' => '<p>Hej,&nbsp;<br>Velkommen til {app_name}.</p><p><b>E-mail </b>: {email}<br><b>Adgangskode</b> : {password}</p><p>{app_url}</p><p>Tak,<br>{app_name}</p>',
+                    'de' => '<p>Hallo,&nbsp;<br>Willkommen zu {app_name}.</p><p><b>Email </b>: {email}<br><b>Passwort</b> : {password}</p><p>{app_url}</p><p>Vielen Dank,<br>{app_name}</p>',
+                    'en' => '<p>Hello,&nbsp;<br>Welcome to {app_name}.</p><p><b>Email </b>: {email}<br><b>Password</b> : {password}</p><p>{app_url}</p><p>Thanks,<br>{app_name}</p>',
+                    'es' => '<p>Hola,&nbsp;<br>Bienvenido a {app_name}.</p><p><b>Correo electrónico </b>: {email}<br><b>Contraseña</b> : {password}</p><p>{app_url}</p><p>Gracias,<br>{app_name}</p>',
+                    'fr' => '<p>Bonjour,&nbsp;<br>Bienvenue à {app_name}.</p><p><b>Email </b>: {email}<br><b>Mot de passe</b> : {password}</p><p>{app_url}</p><p>Merci,<br>{app_name}</p>',
+                    'he' => '<p>שלום,&nbsp;<br>ברוכים הבאים אל {app_name}.</p><p><b>דוא"ל </b>: {email}<br><b>סיסמה</b> : {password} </p><p>{app_url}</p><p>תודה,<br>{app_name}</p>',
+                    'it' => '<p>Ciao,&nbsp;<br>Benvenuto a {app_name}.</p><p><b>E-mail </b>: {email}<br><b>Parola d\'ordine</b> : {password}</p><p>{app_url}</p><p>Grazie,<br>{app_name}</p>',
+                    'ja' => '<p>こんにちは、&nbsp;<br>へようこそ {app_name}.</p><p><b>Eメール </b>: {email}<br><b>パスワード</b> : {password}</p><p>{app_url}</p><p>おかげで、<br>{app_name}</p>',
+                    'nl' => '<p>Hallo,&nbsp;<br>Welkom bij {app_name}.</p><p><b>E-mail </b>: {email}<br><b>Wachtwoord</b> : {password}</p><p>{app_url}</p><p>Bedankt,<br>{app_name}</p>',
+                    'pl' => '<p>Witaj,&nbsp;<br>Witamy w {app_name}.</p><p><b>E-mail </b>: {email}<br><b>Hasło</b> : {password}</p><p>{app_url}</p><p>Dzięki,<br>{app_name}</p>',
+                    'ru' => '<p>Привет,&nbsp;<br>Добро пожаловать в {app_name}.</p><p><b>Электронное письмо </b>: {email}<br><b>пароль</b> : {password}</p><p>{app_url}</p><p>Спасибо,<br>{app_name}</p>',
+                    'pt' => '<p>Olá,<br>Bem-vindo ao {app_name}.</p><p><b>E-mail </b>: {email}<br><b>Senha</b> : {password}</p><p>{app_url}</p><p>Obrigada,<br>{app_name}</p>',
+                    'tr' => '<p>Merhaba,&nbsp;<br>{app_name} e hoş geldiniz.</p><p><b>E-posta </b>: {email}<br><b>Şifre</b> : {şifre} </p><p>{app_url}</p><p>Teşekkürler,<br>{app_name}</p>',
+                    'pt-br' => '<p>Olá,<br>Bem-vindo ao {app_name}.</p><p><b>E-mail </b>: {email}<br><b>Senha</b> : {password}</p><p>{app_url}</p><p>Obrigada,<br>{app_name}</p>',
+
+                ],
+            ],
+            'enable_dashboard_login' => [
+                'subject' => 'Enable Dashboard Login',
                 'lang' => [
                     'ar' => '<p>مرحبا،&nbsp;<br>مرحبا بك في {app_name}.</p><p><b>البريد الإلكتروني </b>: {email}<br><b>كلمه السر</b> : {password}</p><p>{app_url}</p><p>شكر،<br>{app_name}</p>',
                     'zh' => '<p>您好，<br>欢迎使用 {app_name}。</p><p><b>电子邮件 </b>：{email}<br><b>密码</b>：{password} </p><p>{app_url}</p><p>谢谢，<br>{app_name}</p>',

@@ -36,7 +36,7 @@ class CreditNoteController extends Controller
         if(\Auth::user()->can('create credit note'))
         {
 
-            $invoiceDue = Invoice::where('id', $invoice_id)->first();
+            $invoiceDue = Invoice::where('id', $invoice_id)->where('created_by', \Auth::user()->creatorId())->first();
 
             return view('creditNote.create', compact('invoiceDue', 'invoice_id'));
         }
@@ -63,7 +63,7 @@ class CreditNoteController extends Controller
 
                 return redirect()->back()->with('error', $messages->first());
             }
-            $invoiceDue = Invoice::where('id', $invoice_id)->first();
+            $invoiceDue = Invoice::where('id', $invoice_id)->where('created_by', \Auth::user()->creatorId())->first();
             if($request->amount > $invoiceDue->getDue())
             {
                 return redirect()->back()->with('error', 'Maximum ' . \Auth::user()->priceFormat($invoiceDue->getDue()) . ' credit limit of this invoice.');
@@ -72,7 +72,7 @@ class CreditNoteController extends Controller
 
             $credit              = new CreditNote();
             $credit->invoice     = $invoice_id;
-            $credit->customer_id      = $invoice->customer_id;
+            $credit->customer      = $invoice->customer_id;
             $credit->date        = $request->date;
             $credit->amount      = $request->amount;
             $credit->description = $request->description;
@@ -127,7 +127,7 @@ class CreditNoteController extends Controller
     {
         if(\Auth::user()->can('edit credit note'))
         {
-            $invoice = Invoice::where('id', $invoice_id)->first();
+            $invoice = Invoice::where('id', $invoice_id)->where('created_by', \Auth::user()->creatorId())->first();
             $creditNote = CreditNote::find($creditNote_id);
 
             return view('creditNote.view', compact('invoice','creditNote'));
@@ -174,7 +174,7 @@ class CreditNoteController extends Controller
                 return redirect()->back()->with('error', $messages->first());
             }
 
-            $invoiceDue = Invoice::where('id', $invoice_id)->first();
+            $invoiceDue = Invoice::where('id', $invoice_id)->where('created_by', \Auth::user()->creatorId())->first();
             $credit = CreditNote::find($creditNote_id);
             if($request->amount > $invoiceDue->getDue()+$credit->amount)
             {
@@ -233,7 +233,7 @@ class CreditNoteController extends Controller
             $creditNote = CreditNote::find($creditNote_id);
             $creditNote->delete();
 
-            Utility::updateUserBalance('customer', $creditNote->customer, $creditNote->amount, 'credit');
+            Utility::updateUserBalance('customer', $creditNote->customer, $creditNote->amount, 'debit');
 
             return redirect()->back()->with('success', __('Credit Note successfully deleted.'));
 
@@ -249,7 +249,7 @@ class CreditNoteController extends Controller
         if(\Auth::user()->can('create credit note'))
         {
 
-            $invoices = Invoice::where('created_by', \Auth::user()->creatorId())->get()->pluck('invoice_id', 'id');
+            $invoices = Invoice::where('created_by', \Auth::user()->creatorId())->get();
 
             return view('creditNote.custom_create', compact('invoices'));
         }
@@ -277,13 +277,13 @@ class CreditNoteController extends Controller
                 return redirect()->back()->with('error', $messages->first());
             }
             $invoice_id = $request->invoice;
-            $invoiceDue = Invoice::where('id', $invoice_id)->first();
+            $invoiceDue = Invoice::where('id', $invoice_id)->where('created_by', \Auth::user()->creatorId())->first();
 
             if($request->amount > $invoiceDue->getDue())
             {
                 return redirect()->back()->with('error', 'Maximum ' . \Auth::user()->priceFormat($invoiceDue->getDue()) . ' credit limit of this invoice.');
             }
-            $invoice             = Invoice::where('id', $invoice_id)->first();
+            $invoice             = Invoice::where('id', $invoice_id)->where('created_by', \Auth::user()->creatorId())->first();
             $credit              = new CreditNote();
             $credit->invoice     = $invoice_id;
             $credit->customer    = $invoice->customer_id;
@@ -329,7 +329,7 @@ class CreditNoteController extends Controller
 
     public function getinvoice(Request $request)
     {
-        $invoice = Invoice::where('id', $request->id)->first();
+        $invoice = Invoice::where('id', $request->id)->where('created_by', \Auth::user()->creatorId())->first();
 
         return json_encode($invoice->getDue());
     }
